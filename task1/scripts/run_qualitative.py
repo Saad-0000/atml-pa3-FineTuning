@@ -35,6 +35,8 @@ def resolve_prompts_file(t1_cfg: Any, eval_cfg: dict) -> Path:
     """Locates first_plot_questions.yaml across designated locations."""
     candidates = [
         REPO_ROOT / "shared_assets" / "inputs" / "first_plot_questions.yaml",
+        Path(t1_cfg.persistent_root) / "shared_assets" / "inputs" / "first_plot_questions.yaml",
+        Path("/content/drive/MyDrive/ATML_PA3_Task1/shared_assets/inputs/first_plot_questions.yaml"),
         TASK1_ROOT / "configs" / "first_plot_questions.yaml",
         Path("first_plot_questions.yaml"),
     ]
