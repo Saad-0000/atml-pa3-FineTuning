@@ -1,0 +1,9 @@
+| condition | gsm8k_score | gsm8k_delta_pp | hellaswag_score | hellaswag_delta_pp | boolq_score | boolq_delta_pp | arc_easy_score | arc_easy_delta_pp |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| baseline | nan | 0.0 | nan | 0.0 | nan | 0.0 | nan | 0.0 |
+| full_ft_midpoint | nan | nan | nan | nan | nan | nan | nan | nan |
+| full_ft_final | nan | nan | nan | nan | nan | nan | nan | nan |
+| l2sp_final | nan | nan | nan | nan | nan | nan | nan | nan |
+| lora4_final | nan | nan | nan | nan | nan | nan | nan | nan |
+| lora16_final | nan | nan | nan | nan | nan | nan | nan | nan |
+| oplora16_final | nan | nan | nan | nan | nan | nan | nan | nan |

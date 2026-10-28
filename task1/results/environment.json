@@ -1,0 +1,13 @@
+{
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python_version": "3.11.5",
+  "torch_version": "2.7.1+cu118",
+  "cuda_available": true,
+  "device_count": 1,
+  "device_name": "NVIDIA GeForce 930MX",
+  "cuda_version": "11.8",
+  "transformers_version": "4.57.1",
+  "peft_version": "0.17.1",
+  "datasets_version": "4.8.5",
+  "lm_eval_version": "not_installed"
+}

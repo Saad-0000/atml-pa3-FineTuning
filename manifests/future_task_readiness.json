@@ -1,0 +1,127 @@
+{
+  "assignment_metadata": {
+    "course": "EE-5102/CS-6304 - Advanced Topics in Machine Learning",
+    "term": "Fall 2026",
+    "assignment": "Programming Assignment 3",
+    "specification_document": "ATML PA3.pdf",
+    "specification_sha256": "66766f7aafb6046f617d990399dad687ab79b37b8d963cb60bdb4cb0d8871f62",
+    "specification_size_bytes": 505742,
+    "fixed_seed": 6304
+  },
+  "current_scope": {
+    "active_task": "Task 1: Large Language Model Fine-Tuning",
+    "placeholder_tasks": [
+      {
+        "directory": "task2",
+        "status": "empty_placeholder",
+        "permitted_files": [".gitkeep"],
+        "description": "Vision-Language Models and Visual Grounding (SigLIP + Qwen3-0.6B)"
+      },
+      {
+        "directory": "task3",
+        "status": "empty_placeholder",
+        "permitted_files": [".gitkeep"],
+        "description": "Test-Time Compute: Sampling, Selection, and Adaptive Inference"
+      }
+    ]
+  },
+  "model_provenance_and_reuse": {
+    "task1_base_model": {
+      "model_id": "Qwen/Qwen3-0.6B",
+      "architecture": "Qwen3ForCausalLM",
+      "non_thinking_chat_template": true,
+      "enable_thinking": false,
+      "purpose": "Shared starting checkpoint for Task 1 (Full FT, L2-SP, LoRA-4, LoRA-16, OPLoRA-16).",
+      "storage_location": "shared_assets/base_models/qwen3-0.6b/"
+    },
+    "task2_base_models": {
+      "language_model_id": "Qwen/Qwen3-0.6B",
+      "vision_encoder_id": "google/siglip-base-patch16-224",
+      "relationship_to_task1": "Task 2 starts from the original untouched Qwen/Qwen3-0.6B checkpoint, NOT from any Task 1 fine-tuned checkpoint."
+    },
+    "task3_models": {
+      "offline_rollouts_models": [
+        "Qwen2.5-3B-Instruct (LLM, MATH test subset, 32,000 rollouts)",
+        "Qwen2.5-VL-3B-Instruct (VLM, MathVista testmini, 32,000 rollouts)"
+      ],
+      "live_generation_model": "Qwen/Qwen2.5-3B-Instruct (revision pinned in supplied README.MD)",
+      "relationship_to_task1": "Task 3 live model is Qwen2.5-3B-Instruct, NOT Task 1's Qwen3-0.6B."
+    }
+  },
+  "input_inventory": {
+    "task1_inputs": {
+      "metamathqa": {
+        "source": "meta-math/MetaMathQA (HuggingFace datasets)",
+        "status": "downloadable_on_demand",
+        "filtering_rules": [
+          "Non-empty question and response",
+          "Formatted sequence length <= 2048 tokens using Qwen non-thinking chat template",
+          "GSM8K test question leakage filter after normalized string matching against query and original_question",
+          "First 40,000 eligible examples in preserved source order"
+        ],
+        "cached_artifact_target": "shared_assets/inputs/task1_metamathqa/filtered_40k.jsonl"
+      },
+      "gsm8k_leakage_and_eval": {
+        "source": "gsm8k test split (1,319 examples)",
+        "status": "downloadable_on_demand",
+        "purpose": "Contamination filtering for training data and zero-shot test evaluation"
+      },
+      "first_plot_questions_yaml": {
+        "path": "shared_assets/inputs/first_plot_questions.yaml",
+        "status": "missing",
+        "required_for": "Qualitative evaluation (24 prompts, 8 questions x 3 formats)",
+        "action_required": "Must be provided by student/instructor into shared_assets/inputs/first_plot_questions.yaml"
+      }
+    },
+    "task2_inputs": {
+      "coco_2014_train_val_images": {
+        "status": "missing",
+        "target_persistent_path": "shared_assets/inputs/task2_coco/images/",
+        "required_for": "Task 2 caption alignment and grounding training/eval"
+      },
+      "coco_2014_annotations": {
+        "status": "missing",
+        "target_persistent_path": "shared_assets/inputs/task2_coco/annotations/",
+        "required_for": "Captions and instance bounding box annotations"
+      },
+      "vqav2_complementary_pairs": {
+        "status": "missing",
+        "target_persistent_path": "shared_assets/inputs/task2_vqav2/",
+        "required_for": "Natural VQAv2 complementary pairs and consensus human answers"
+      },
+      "future_task2_artifacts_needed": [
+        "Seeded image/pair selections (seed 6304)",
+        "Split-isolation manifest (train2014 vs val2014 image-disjoint splits)",
+        "Cached frozen SigLIP features (196 patch tokens, final layer norm applied exactly once, FP16)",
+        "Connector calibration metadata",
+        "Task 2 configs, checkpoints, and logs (under task2/ when implemented)"
+      ]
+    },
+    "task3_inputs": {
+      "atml_pa3_data_archive": {
+        "status": "missing",
+        "target_persistent_path": "shared_assets/inputs/task3_rollouts/ATML-PA3-Data/",
+        "required_contents": [
+          "README.MD",
+          "Qwen2.5-3B-Instruct/generations.parquet",
+          "Qwen2.5-3B-Instruct/probability_metrics.parquet",
+          "Qwen2.5-VL-3B-Instruct/generations.parquet",
+          "Qwen2.5-VL-3B-Instruct/probability_metrics.parquet",
+          "Qwen2.5-VL-3B-Instruct/attention_metrics.parquet"
+        ]
+      },
+      "future_task3_artifacts_needed": [
+        "Lexicographical sort + permuted dev (200) / held-out (800) question IDs (seed 6304)",
+        "Scorer / answer normalization versions (math-verify, MathVista rules)",
+        "Ten seeded random rollout-order permutations",
+        "Live-generation config and outputs for 50 MATH evaluation questions"
+      ]
+    }
+  },
+  "readiness_summary": {
+    "task1_ready_to_run": true,
+    "task2_ready_to_run": false,
+    "task3_ready_to_run": false,
+    "note": "Task 2 and Task 3 are intentionally empty placeholders. All infrastructure, scripts, and tests for Task 1 are implemented in task1/."
+  }
+}

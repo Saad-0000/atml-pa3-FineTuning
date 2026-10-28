@@ -1,0 +1,50 @@
+# Task 1 Global Configuration
+# Assignment: EE-5102/CS-6304 ATML Fall 2026 PA3 Task 1
+
+seed: 6304
+model:
+  name_or_path: "Qwen/Qwen3-0.6B"
+  revision: "main"
+  enable_thinking: false
+  torch_dtype: "float16"
+  use_cache: false
+
+training:
+  budget_examples: 40000
+  total_optimizer_updates: 1250
+  microbatch_size: 2
+  gradient_accumulation_steps: 16
+  effective_batch_size: 32
+  max_seq_length: 2048
+  gradient_checkpointing: true
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  warmup_updates: 38
+  lr_scheduler_type: "cosine"
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+
+data:
+  source_dataset: "meta-math/MetaMathQA"
+  leakage_eval_dataset: "gsm8k"
+  leakage_eval_split: "test"
+  filter_rules:
+    min_length: 1
+    max_length_tokens: 2048
+    strip_empty: true
+    exclude_gsm8k_leakage: true
+  cache_dir: "artifacts/data_cache"
+
+checkpointing:
+  milestones_updates: [312, 625, 937, 1250]
+  milestones_examples: [9984, 20000, 29984, 40000]
+  emergency_save_interval_updates: 50
+  keep_latest: 2
+  save_dir: "checkpoints"
+
+storage:
+  persistent_root: "/content/drive/MyDrive/ATML_PA3_Task1"
+  artifacts_dir: "artifacts"
+  results_dir: "results"
+  logs_dir: "logs"

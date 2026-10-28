@@ -1,0 +1,7 @@
+comparison,condition_A,condition_B,gsm8k_diff_pp (A - B),hellaswag_diff_pp (A - B),boolq_diff_pp (A - B),arc_easy_diff_pp (A - B)
+LoRA Rank (LoRA-16 vs LoRA-4),lora16_final,lora4_final,,,,
+L2-SP Regularization (L2-SP vs Full FT),l2sp_final,full_ft_final,,,,
+Orthogonal Protection (OPLoRA-16 vs LoRA-16),oplora16_final,lora16_final,,,,
+Adaptation vs Retention (Full FT vs LoRA-16),full_ft_final,lora16_final,,,,
+Progression (Full FT Midpoint vs Baseline),full_ft_midpoint,baseline,,,,
+Progression (Full FT Final vs Midpoint),full_ft_final,full_ft_midpoint,,,,

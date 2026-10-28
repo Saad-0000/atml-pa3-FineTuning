@@ -1,0 +1,61 @@
+{
+  "manifest_description": "Index of all serialized dictionaries, state mappings, and structured artifacts",
+  "entries": [
+    {
+      "name": "metamathqa_manifest",
+      "relative_path": "artifacts/data_cache/metamathqa_filtered_40000_manifest.json",
+      "format": "json",
+      "schema_version": "1.0",
+      "creation_stage": "prepare_data",
+      "purpose": "Filter statistics, SHA-256 hash, and eligibility counts for 40k MetaMathQA dataset"
+    },
+    {
+      "name": "probe_manifest",
+      "relative_path": "artifacts/probe_manifest.json",
+      "format": "json",
+      "schema_version": "1.0",
+      "creation_stage": "prepare_data",
+      "purpose": "Exact prompt tokens, text, and hashes for 64 activation probes (seed 6304)"
+    },
+    {
+      "name": "theta0_reference",
+      "relative_path": "artifacts/theta0_reference/theta0.pt",
+      "format": "pt",
+      "schema_version": "1.0",
+      "creation_stage": "evaluate_baseline",
+      "purpose": "Immutable FP32 reference state dict for L2-SP and full-model displacement"
+    },
+    {
+      "name": "oplora_bases",
+      "relative_path": "artifacts/oplora_bases/",
+      "format": "pt",
+      "schema_version": "1.0",
+      "creation_stage": "evaluate_baseline",
+      "purpose": "FP32 leading SVD bases U_k and V_k (k=128) for all target modules"
+    },
+    {
+      "name": "activation_cache",
+      "relative_path": "artifacts/activation_cache/base_activations_z.pt",
+      "format": "pt",
+      "schema_version": "1.0",
+      "creation_stage": "evaluate_baseline",
+      "purpose": "Cached base model input activation vectors z for layers 0, 13, 27 across 64 probes"
+    },
+    {
+      "name": "checkpoint_manifest",
+      "relative_path": "checkpoints/<method>/checkpoint_manifest.json",
+      "format": "json",
+      "schema_version": "1.0",
+      "creation_stage": "train_method",
+      "purpose": "Atomic completion manifests, checksums, and update steps for all recovery milestones"
+    },
+    {
+      "name": "evidence_manifest",
+      "relative_path": "results/evidence_manifest.json",
+      "format": "json",
+      "schema_version": "1.0",
+      "creation_stage": "build_results",
+      "purpose": "Top-level mapping of all 5 required evidence categories to generated files and status"
+    }
+  ]
+}

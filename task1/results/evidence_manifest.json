@@ -1,0 +1,59 @@
+{
+  "assignment": "ATML Fall 2026 PA3 Task 1",
+  "evidence_categories": [
+    {
+      "category": "Benchmark results",
+      "description": "One table covering all seven evaluation conditions and all four benchmarks, with primary scores and changes from baseline in percentage points.",
+      "target_files": [
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\tables\\benchmark_results_all_conditions.csv",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\tables\\benchmark_results_all_conditions.md",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\plots\\benchmark_comparison_all_conditions.png"
+      ],
+      "generation_command": "python scripts/build_results.py",
+      "status": "complete"
+    },
+    {
+      "category": "Learning and regularization",
+      "description": "Combined SFT-loss plot for the five runs, with a concise comparison of Full FT and L2-SP penalty strength and final parameter displacement.",
+      "target_files": [
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\plots\\training_sft_loss_all_methods.png",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\plots\\l2sp_objective_components.png",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\tables\\l2sp_and_displacement.csv"
+      ],
+      "generation_command": "python scripts/build_results.py",
+      "status": "blocked"
+    },
+    {
+      "category": "Resources",
+      "description": "Compact comparison of trainable parameters, training time, peak GPU memory, and checkpoint sizes for the five runs.",
+      "target_files": [
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\tables\\resource_comparison.csv",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\plots\\resource_comparison.png"
+      ],
+      "generation_command": "python scripts/build_results.py",
+      "status": "complete"
+    },
+    {
+      "category": "Diagnostics",
+      "description": "Compact figure or table summarizing subspace interference, relative update magnitude, and math/non-math activation corrections.",
+      "target_files": [
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\tables\\weight_space_diagnostics.csv",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\tables\\activation_diagnostics_summary.csv",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\plots\\weight_space_diagnostics.png",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\plots\\activation_corrections.png"
+      ],
+      "generation_command": "python scripts/run_diagnostics.py",
+      "status": "blocked"
+    },
+    {
+      "category": "Qualitative findings",
+      "description": "Summary of the fixed 42-response annotation subset and aligned excerpts comparing the same question and format across models.",
+      "target_files": [
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\tables\\qualitative_42_annotations.csv",
+        "D:\\Lums\\Advanced Topic in Machine Learning\\atml-pa3-FineTuning\\task1\\results\\qualitative\\all_168_responses.jsonl"
+      ],
+      "generation_command": "python scripts/run_qualitative.py",
+      "status": "blocked"
+    }
+  ]
+}

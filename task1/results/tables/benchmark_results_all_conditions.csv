@@ -1,0 +1,8 @@
+condition,gsm8k_score,gsm8k_delta_pp,hellaswag_score,hellaswag_delta_pp,boolq_score,boolq_delta_pp,arc_easy_score,arc_easy_delta_pp
+baseline,,0.0,,0.0,,0.0,,0.0
+full_ft_midpoint,,,,,,,,
+full_ft_final,,,,,,,,
+l2sp_final,,,,,,,,
+lora4_final,,,,,,,,
+lora16_final,,,,,,,,
+oplora16_final,,,,,,,,

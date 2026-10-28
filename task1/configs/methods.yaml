@@ -1,0 +1,72 @@
+# Five Training Methods Configuration
+# Assignment: EE-5102/CS-6304 ATML Fall 2026 PA3 Task 1
+
+full_ft:
+  name: "Full Fine-Tuning"
+  method_type: "full_ft"
+  peak_lr: 2.0e-5
+  lambda_l2sp: 0.0
+  trainable_scope: "all"
+  weight_decay: 0.01
+
+l2sp:
+  name: "Full Fine-Tuning + L2-SP"
+  method_type: "l2sp"
+  peak_lr: 2.0e-5
+  lambda_l2sp: 1.0e-3
+  trainable_scope: "all"
+  weight_decay: 0.01
+  reference_checkpoint: "artifacts/theta0_reference"
+
+lora4:
+  name: "LoRA Rank 4"
+  method_type: "lora"
+  peak_lr: 2.0e-4
+  r: 4
+  alpha: 8
+  dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+lora16:
+  name: "LoRA Rank 16"
+  method_type: "lora"
+  peak_lr: 2.0e-4
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+oplora16:
+  name: "OPLoRA Rank 16 (Protection Rank 128)"
+  method_type: "oplora"
+  peak_lr: 2.0e-4
+  r: 16
+  alpha: 32
+  protection_rank_k: 128
+  dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  basis_cache_dir: "artifacts/oplora_bases"

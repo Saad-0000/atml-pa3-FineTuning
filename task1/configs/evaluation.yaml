@@ -1,0 +1,113 @@
+# Evaluation Protocol Configuration
+# Assignment: EE-5102/CS-6304 ATML Fall 2026 PA3 Task 1
+
+seed: 6304
+fp16: true
+dropout: 0.0
+
+benchmarks:
+  gsm8k:
+    task_name: "gsm8k_cot"
+    split: "test"
+    expected_count: 1319
+    scoring_method: "generation"
+    primary_metric: "exact_match,flexible-extract"
+    num_fewshot: 0
+    max_gen_toks: 1024
+    temperature: 0.0
+    apply_chat_template: true
+    enable_thinking: false
+    stop_sequences: ["\n\n", "Question:", "User:"]
+
+  hellaswag:
+    task_name: "hellaswag"
+    split: "validation"
+    expected_count: 10042
+    scoring_method: "candidate_likelihood"
+    primary_metric: "acc_norm"
+    secondary_metric: "acc"
+    apply_chat_template: false
+
+  boolq:
+    task_name: "boolq"
+    split: "validation"
+    expected_count: 3270
+    scoring_method: "candidate_likelihood"
+    primary_metric: "acc"
+    apply_chat_template: false
+
+  arc_easy:
+    task_name: "arc_easy"
+    split: "test"
+    expected_count: 2376
+    scoring_method: "candidate_likelihood"
+    primary_metric: "acc_norm"
+    secondary_metric: "acc"
+    apply_chat_template: false
+
+conditions:
+  - id: "baseline"
+    display_name: "Unchanged Baseline"
+    checkpoint_stage: "step_0"
+    is_baseline: true
+
+  - id: "full_ft_midpoint"
+    display_name: "Full FT (Midpoint)"
+    method: "full_ft"
+    checkpoint_stage: "step_625"
+    updates: 625
+    examples: 20000
+
+  - id: "full_ft_final"
+    display_name: "Full FT (Final)"
+    method: "full_ft"
+    checkpoint_stage: "step_1250"
+    updates: 1250
+    examples: 40000
+
+  - id: "l2sp_final"
+    display_name: "Full FT + L2-SP"
+    method: "l2sp"
+    checkpoint_stage: "step_1250"
+    updates: 1250
+    examples: 40000
+
+  - id: "lora4_final"
+    display_name: "LoRA (r=4)"
+    method: "lora4"
+    checkpoint_stage: "step_1250"
+    updates: 1250
+    examples: 40000
+
+  - id: "lora16_final"
+    display_name: "LoRA (r=16)"
+    method: "lora16"
+    checkpoint_stage: "step_1250"
+    updates: 1250
+    examples: 40000
+
+  - id: "oplora16_final"
+    display_name: "OPLoRA (r=16, k=128)"
+    method: "oplora16"
+    checkpoint_stage: "step_1250"
+    updates: 1250
+    examples: 40000
+
+diagnostics:
+  layers: [0, 13, 27]
+  target_module: "down_proj"
+  protection_rank_k: 128
+  probe_counts:
+    math_gsm8k: 32
+    non_math_hellaswag: 32
+
+qualitative:
+  prompts_source: "shared_assets/inputs/first_plot_questions.yaml"
+  fallback_prompts_source: "task1/configs/first_plot_questions.yaml"
+  max_new_tokens: 512
+  temperature: 0.0
+  enable_thinking: false
+  annotation_subset_rules:
+    underlying_questions: ["first", "last"]
+    formats: ["plain", "json", "template"]
+    expected_rows: 42

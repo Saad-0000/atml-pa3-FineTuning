@@ -1,0 +1,7 @@
+| method | trainable_parameters | trainable_pct | peak_gpu_allocated_mib | training_time_sec | inference_checkpoint_mib | recovery_checkpoint_mib |
+| --- | --- | --- | --- | --- | --- | --- |
+| full_ft | 596000000 | 100.0 | nan | nan | nan | nan |
+| l2sp | 596000000 | 100.0 | nan | nan | nan | nan |
+| lora4 | 1474560 | 0.25 | nan | nan | nan | nan |
+| lora16 | 5898240 | 0.99 | nan | nan | nan | nan |
+| oplora16 | 5898240 | 0.99 | nan | nan | nan | nan |

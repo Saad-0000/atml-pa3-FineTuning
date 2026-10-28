@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Large model weights and data files
+*.bin
+*.pt
+*.safetensors
+*.ckpt
+*.h5
+*.arrow
+*.parquet.tmp
+*.tar.gz
+*.zip
+
+# Task 1 local large directories (canonical copies reside on Google Drive)
+task1/artifacts/*
+!task1/artifacts/.gitkeep
+task1/checkpoints/*
+!task1/checkpoints/.gitkeep
+task1/logs/*
+!task1/logs/.gitkeep
+
+# OS / Editor specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Sensitive or credential files
+*.pem
+*.key
+token.txt
+.hf_token
+credentials.json

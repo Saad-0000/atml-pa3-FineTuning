@@ -1,0 +1,100 @@
+{
+  "task": "Task 1: Large Language Model Fine-Tuning",
+  "assignment": "EE-5102/CS-6304 - ATML Fall 2026 Programming Assignment 3",
+  "base_model": {
+    "name": "Qwen/Qwen3-0.6B",
+    "revision": "main",
+    "enable_thinking": false,
+    "non_thinking_chat_template": true
+  },
+  "seed": 6304,
+  "training_budget": {
+    "examples": 40000,
+    "optimizer_updates": 1250,
+    "effective_batch_size": 32,
+    "microbatch_size": 2,
+    "gradient_accumulation_steps": 16,
+    "sequence_length_cap": 2048,
+    "warmup_updates": 38,
+    "max_grad_norm": 1.0,
+    "weight_decay": 0.01
+  },
+  "methods": [
+    {
+      "id": "full_ft",
+      "name": "Full Fine-Tuning",
+      "peak_lr": 2.0e-5,
+      "lambda_l2sp": 0.0,
+      "trainable_params": 596000000
+    },
+    {
+      "id": "l2sp",
+      "name": "Full Fine-Tuning + L2-SP",
+      "peak_lr": 2.0e-5,
+      "lambda_l2sp": 1.0e-3,
+      "trainable_params": 596000000
+    },
+    {
+      "id": "lora4",
+      "name": "LoRA Rank 4",
+      "peak_lr": 2.0e-4,
+      "r": 4,
+      "alpha": 8,
+      "trainable_params": 1474560
+    },
+    {
+      "id": "lora16",
+      "name": "LoRA Rank 16",
+      "peak_lr": 2.0e-4,
+      "r": 16,
+      "alpha": 32,
+      "trainable_params": 5898240
+    },
+    {
+      "id": "oplora16",
+      "name": "OPLoRA Rank 16 (Protection Rank 128)",
+      "peak_lr": 2.0e-4,
+      "r": 16,
+      "alpha": 32,
+      "k": 128,
+      "trainable_params": 5898240
+    }
+  ],
+  "evaluation_benchmarks": [
+    {
+      "name": "GSM8K",
+      "task": "gsm8k_cot",
+      "split": "test",
+      "count": 1319,
+      "metric": "exact_match,flexible-extract",
+      "apply_chat_template": true
+    },
+    {
+      "name": "HellaSwag",
+      "task": "hellaswag",
+      "split": "validation",
+      "count": 10042,
+      "metric": "acc_norm",
+      "apply_chat_template": false
+    },
+    {
+      "name": "BoolQ",
+      "task": "boolq",
+      "split": "validation",
+      "count": 3270,
+      "metric": "acc",
+      "apply_chat_template": false
+    },
+    {
+      "name": "ARC-Easy",
+      "task": "arc_easy",
+      "split": "test",
+      "count": 2376,
+      "metric": "acc_norm",
+      "apply_chat_template": false
+    }
+  ],
+  "milestones": [312, 625, 937, 1250],
+  "emergency_checkpoint_interval": 50,
+  "execution_environment_target": "Google Colab Tesla T4 GPU (16 GiB VRAM)"
+}
