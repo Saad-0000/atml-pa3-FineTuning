@@ -39,7 +39,7 @@ data:
 checkpointing:
   milestones_updates: [312, 625, 937, 1250]
   milestones_examples: [9984, 20000, 29984, 40000]
-  emergency_save_interval_updates: 50
+  emergency_save_interval_updates: 318
   keep_latest: 2
   save_dir: "checkpoints"
 
