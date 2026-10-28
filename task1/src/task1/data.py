@@ -38,15 +38,22 @@ def normalize_text(text: str) -> str:
 
 
 def load_gsm8k_test_questions(
-    dataset_name: str = "gsm8k",
+    dataset_name: str = "openai/gsm8k",
     config_name: str = "main",
     split: str = "test",
 ) -> Set[str]:
     """
     Loads GSM8K test questions and returns a set of normalized question strings.
+    Uses canonical 'openai/gsm8k' namespace to avoid HfUriError on modern huggingface_hub.
     """
     logger.info(f"Loading GSM8K {split} split from {dataset_name}:{config_name}...")
-    ds = load_dataset(dataset_name, config_name, split=split)
+    try:
+        ds = load_dataset(dataset_name, config_name, split=split)
+    except Exception as e:
+        alt_name = "gsm8k" if dataset_name == "openai/gsm8k" else "openai/gsm8k"
+        logger.warning(f"Failed to load {dataset_name} ({e}), falling back to {alt_name}...")
+        ds = load_dataset(alt_name, config_name, split=split)
+
     normalized_questions = set()
     for row in ds:
         q = row.get("question", "")

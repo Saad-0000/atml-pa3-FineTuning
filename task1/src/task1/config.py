@@ -39,7 +39,7 @@ class Task1Config:
     adam_epsilon: float = 1.0e-8
 
     source_dataset: str = "meta-math/MetaMathQA"
-    leakage_eval_dataset: str = "gsm8k"
+    leakage_eval_dataset: str = "openai/gsm8k"
     leakage_eval_split: str = "test"
 
     milestones_updates: List[int] = field(default_factory=lambda: [312, 625, 937, 1250])

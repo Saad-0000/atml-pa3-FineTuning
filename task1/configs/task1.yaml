@@ -27,7 +27,7 @@ training:
 
 data:
   source_dataset: "meta-math/MetaMathQA"
-  leakage_eval_dataset: "gsm8k"
+  leakage_eval_dataset: "openai/gsm8k"
   leakage_eval_split: "test"
   filter_rules:
     min_length: 1

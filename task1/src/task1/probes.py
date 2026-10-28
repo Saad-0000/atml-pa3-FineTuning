@@ -47,10 +47,16 @@ def extract_probe_inputs(
     indices = sample_probe_indices(seed=seed)
 
     logger.info("Loading GSM8K test split for probe extraction...")
-    gsm8k_ds = load_dataset("gsm8k", "main", split="test")
+    try:
+        gsm8k_ds = load_dataset("openai/gsm8k", "main", split="test")
+    except Exception:
+        gsm8k_ds = load_dataset("gsm8k", "main", split="test")
 
     logger.info("Loading HellaSwag validation split for probe extraction...")
-    hellaswag_ds = load_dataset("hellaswag", split="validation")
+    try:
+        hellaswag_ds = load_dataset("Rowan/hellaswag", split="validation")
+    except Exception:
+        hellaswag_ds = load_dataset("hellaswag", split="validation")
 
     probes: List[Dict[str, Any]] = []
 
