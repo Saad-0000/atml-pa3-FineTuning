@@ -1,22 +1,5 @@
 {
-  "manifest_description": "Index of all serialized dictionaries, state mappings, and structured artifacts",
   "entries": [
-    {
-      "name": "metamathqa_manifest",
-      "relative_path": "artifacts/data_cache/metamathqa_filtered_40000_manifest.json",
-      "format": "json",
-      "schema_version": "1.0",
-      "creation_stage": "prepare_data",
-      "purpose": "Filter statistics, SHA-256 hash, and eligibility counts for 40k MetaMathQA dataset"
-    },
-    {
-      "name": "probe_manifest",
-      "relative_path": "artifacts/probe_manifest.json",
-      "format": "json",
-      "schema_version": "1.0",
-      "creation_stage": "prepare_data",
-      "purpose": "Exact prompt tokens, text, and hashes for 64 activation probes (seed 6304)"
-    },
     {
       "name": "theta0_reference",
       "relative_path": "artifacts/theta0_reference/theta0.pt",
@@ -56,7 +39,20 @@
       "schema_version": "1.0",
       "creation_stage": "build_results",
       "purpose": "Top-level mapping of all 5 required evidence categories to generated files and status"
+    },
+    {
+      "name": "metamathqa_manifest",
+      "relative_path": "artifacts/data_cache/metamathqa_filtered_40000_manifest.json",
+      "schema_version": "1.0",
+      "format": "json",
+      "purpose": "Filter statistics, SHA-256 hash, and eligibility counts for 40k MetaMathQA dataset"
+    },
+    {
+      "name": "probe_manifest",
+      "relative_path": "artifacts/probe_manifest.json",
+      "schema_version": "1.0",
+      "format": "json",
+      "purpose": "Exact prompt tokens, text, and hashes for 64 activation probes (seed 6304)"
     }
   ]
 }
-

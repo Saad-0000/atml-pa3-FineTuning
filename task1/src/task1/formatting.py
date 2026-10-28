@@ -1,8 +1,11 @@
 """Chat template formatting, tokenization, loss masking, and token-weighted loss."""
 
 from typing import Any, Dict, List, Optional, Tuple
+import logging
 import torch
 import torch.nn.functional as F
+
+logger = logging.getLogger("task1.formatting")
 
 
 def format_chat_prompt(question: str, enable_thinking: bool = False) -> List[Dict[str, str]]:
@@ -48,8 +51,8 @@ def tokenize_training_example(
         full_ids = tokenizer.apply_chat_template(
             messages_full, add_generation_prompt=False, enable_thinking=enable_thinking, **kwargs
         )
-    except TypeError:
-        # Fallback if tokenizer does not accept enable_thinking keyword argument
+    except Exception:
+        # Fallback if tokenizer does not accept enable_thinking keyword argument or jinja variable
         prompt_ids = tokenizer.apply_chat_template(
             messages_prompt, add_generation_prompt=True, **kwargs
         )
@@ -65,11 +68,12 @@ def tokenize_training_example(
     # Guardrail: check length before truncation
     seq_len = len(full_ids)
     if seq_len > max_seq_length:
+        logger.debug(f"Excluded: seq_len {seq_len} > max {max_seq_length}")
         return None  # Excluded: strictly exceeds cap; no truncation allowed
 
     prompt_len = len(prompt_ids)
     if prompt_len >= seq_len:
-        # Prompt longer or equal to full conversation (empty response)
+        logger.debug(f"Excluded: prompt_len {prompt_len} >= seq_len {seq_len}")
         return None
 
     # Construct labels: -100 for prompt tokens, token ID for response + EOT
@@ -80,6 +84,7 @@ def tokenize_training_example(
 
     num_supervised_tokens = sum(1 for lbl in labels if lbl != -100)
     if num_supervised_tokens <= 0:
+        logger.debug("Excluded: num_supervised_tokens <= 0")
         return None
 
     return {

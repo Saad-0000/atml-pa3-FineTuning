@@ -173,14 +173,27 @@ def prepare_metamathqa_subset(
         stats["selected_total"] += 1
         pbar.update(1)
 
+        if stats["scanned_total"] % 5000 == 0:
+            logger.info(
+                f"Scan progress: {stats['scanned_total']} scanned | "
+                f"{stats['selected_total']}/{target_count} selected | "
+                f"excluded: {stats['excluded_overlength']} overlength, "
+                f"{stats['excluded_gsm8k_leakage']} leakage, {stats['excluded_empty']} empty"
+            )
+
         if len(selected_examples) >= target_count:
             break
 
     pbar.close()
 
     if len(selected_examples) < target_count:
+        logger.error(
+            f"Failed to collect {target_count} examples from {source_dataset_name}. "
+            f"Final statistics: {stats}"
+        )
         raise RuntimeError(
-            f"Insufficient eligible training examples: collected {len(selected_examples)}, required {target_count}!"
+            f"Insufficient eligible training examples: collected {len(selected_examples)}, required {target_count}! "
+            f"Filter stats: {stats}"
         )
 
     # Compute manifest hash
