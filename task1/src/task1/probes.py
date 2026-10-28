@@ -185,3 +185,4 @@ def cache_base_model_activations(
         logger.info(f"Saved {len(activation_cache)} cached activation vectors to {out_p}.")
 
     return activation_cache
+

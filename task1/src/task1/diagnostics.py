@@ -134,3 +134,4 @@ def run_full_diagnostics(
                 })
 
     return weight_records, activation_records
+

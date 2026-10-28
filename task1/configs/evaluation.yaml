@@ -111,3 +111,4 @@ qualitative:
     underlying_questions: ["first", "last"]
     formats: ["plain", "json", "template"]
     expected_rows: 42
+

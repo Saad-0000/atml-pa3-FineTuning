@@ -65,3 +65,4 @@ As mandated by the assignment specification and Revision 5 prompt guardrails:
 - Answer scoring: `math-verify` for MATH and MathVista precision rules.
 - Quality scoring: Self-certainty ($K_i$), Log-probability ($L_i$), Visual engagement ($V_i$), and VisConf ($Z_i$).
 - RWC consensus weighting and adaptive sampling stopping policies.
+

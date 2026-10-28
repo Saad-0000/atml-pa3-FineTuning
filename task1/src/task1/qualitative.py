@@ -207,3 +207,4 @@ def build_42_annotation_sheet(
     logger.info(f"Saved aligned 42-response annotation sheet to {p} (total rows={len(subset_df)}).")
 
     return subset_df
+

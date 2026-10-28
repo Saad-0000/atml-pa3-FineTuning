@@ -189,3 +189,4 @@ def merge_and_compare_logits(
         passed = max_abs <= tolerance
         logger.info(f"LoRA merge check: max_abs={max_abs:.6e}, max_rel={max_rel:.6e}, passed={passed}")
         return max_abs, max_rel, passed
+

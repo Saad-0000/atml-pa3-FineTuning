@@ -84,3 +84,4 @@ def build_controlled_comparisons_table(
         rows.append(row)
 
     return pd.DataFrame(rows)
+

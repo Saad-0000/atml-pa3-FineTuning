@@ -109,3 +109,4 @@ def save_theta0_reference(
     theta0 = {name: param.detach().cpu().to(torch.float32) for name, param in model.named_parameters()}
     torch.save(theta0, str(save_path))
     logger.info(f"Saved {len(theta0)} parameters to {save_path}.")
+

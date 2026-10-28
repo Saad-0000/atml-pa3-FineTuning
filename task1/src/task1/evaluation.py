@@ -164,3 +164,4 @@ def evaluate_with_lm_eval(
         df.to_parquet(out_p / f"{task_key}_per_example.parquet", index=False)
 
     return aggregates, per_example_records
+

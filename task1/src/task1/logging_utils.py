@@ -105,3 +105,4 @@ def reset_gpu_memory_stats() -> None:
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.empty_cache()
+

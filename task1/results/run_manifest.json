@@ -98,3 +98,4 @@
   "emergency_checkpoint_interval": 50,
   "execution_environment_target": "Google Colab Tesla T4 GPU (16 GiB VRAM)"
 }
+

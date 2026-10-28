@@ -126,3 +126,4 @@ def get_default_configs(task1_root: Optional[Path] = None) -> tuple[Task1Config,
     methods_cfg = load_yaml(config_dir / "methods.yaml")
     eval_cfg = load_yaml(config_dir / "evaluation.yaml")
     return t1_cfg, methods_cfg, eval_cfg
+
