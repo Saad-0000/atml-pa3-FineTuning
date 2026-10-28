@@ -7,10 +7,27 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import torch
 import torch.nn as nn
-from torch.cuda.amp import GradScaler, autocast
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
 from tqdm import tqdm
+
+
+def _create_grad_scaler(device_type: str = "cuda", enabled: bool = True):
+    """Instantiates modern torch.amp.GradScaler with fallback to legacy torch.cuda.amp."""
+    try:
+        return torch.amp.GradScaler(device_type, enabled=enabled)
+    except (TypeError, AttributeError):
+        from torch.cuda.amp import GradScaler as LegacyGradScaler
+        return LegacyGradScaler(enabled=enabled)
+
+
+def _get_autocast_context(device_type: str = "cuda", dtype: torch.dtype = torch.float16, enabled: bool = True):
+    """Instantiates modern torch.amp.autocast with fallback to legacy torch.cuda.amp."""
+    try:
+        return torch.amp.autocast(device_type=device_type, dtype=dtype, enabled=enabled)
+    except (TypeError, AttributeError):
+        from torch.cuda.amp import autocast as legacy_autocast
+        return legacy_autocast(enabled=enabled, dtype=dtype)
 
 from .checkpointing import CheckpointManager, set_rng_states
 from .formatting import collate_effective_batch, compute_token_weighted_loss
@@ -73,7 +90,7 @@ def train_single_method(
         num_warmup_steps=warmup_updates,
         num_training_steps=total_updates,
     )
-    scaler = GradScaler(enabled=(device.type == "cuda"))
+    scaler = _create_grad_scaler(device_type=device.type, enabled=(device.type == "cuda"))
 
     start_update = 0
     examples_seen = 0
@@ -133,7 +150,7 @@ def train_single_method(
         total_valid_response_tokens = sum(ex["num_supervised_tokens"] for ex in eff_batch_examples)
         denom_tokens = max(1, total_valid_response_tokens)
 
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
         eff_sft_loss_sum = 0.0
         eff_tokens_processed = 0
 
@@ -148,7 +165,7 @@ def train_single_method(
             attention_mask = collated["attention_mask"].to(device)
             labels = collated["labels"].to(device)
 
-            with autocast(enabled=(device.type == "cuda"), dtype=torch.float16):
+            with _get_autocast_context(device_type=device.type, dtype=torch.float16, enabled=(device.type == "cuda")):
                 outputs = model(input_ids=input_ids, attention_mask=attention_mask)
                 loss_sum, num_tokens = compute_token_weighted_loss(outputs.logits, labels)
                 # Normalize by effective batch total tokens
@@ -158,6 +175,9 @@ def train_single_method(
 
             eff_sft_loss_sum += float(loss_sum.detach().item())
             eff_tokens_processed += num_tokens
+
+            # Explicitly deallocate intermediate microbatch tensors to keep VRAM footprint low
+            del outputs, loss_sum, loss_microbatch, input_ids, attention_mask, labels, collated
 
         # SFT loss normalized across entire effective batch
         sft_loss_val = eff_sft_loss_sum / denom_tokens
@@ -175,6 +195,7 @@ def train_single_method(
             total_loss_val += lambda_omega_val
             # Backward for L2-SP penalty
             scaler.scale(lambda_omega_tensor).backward()
+            del omega_tensor, lambda_omega_tensor
 
         # Unscale gradients before norm clipping
         scaler.unscale_(optimizer)
@@ -185,6 +206,12 @@ def train_single_method(
         scaler.step(optimizer)
         scaler.update()
         new_scale = scaler.get_scale() if scaler.is_enabled() else 1.0
+
+        # Deallocate parameter gradients immediately after optimizer step to reclaim VRAM
+        optimizer.zero_grad(set_to_none=True)
+
+        if device.type == "cuda" and (current_update % 20 == 0):
+            torch.cuda.empty_cache()
 
         step_skipped = new_scale < old_scale
         if step_skipped:

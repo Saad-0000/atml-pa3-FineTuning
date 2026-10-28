@@ -5,6 +5,10 @@ Executes one of the five independent training conditions from the untouched star
 Options: full_ft, l2sp, lora4, lora16, oplora16
 """
 
+import os
+# Configure PyTorch memory allocator to avoid fragmentation on Tesla T4 GPUs
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
 import argparse
 import json
 import logging

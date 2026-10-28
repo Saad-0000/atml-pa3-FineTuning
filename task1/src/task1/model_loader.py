@@ -49,7 +49,10 @@ def load_base_model(
     model.config.use_cache = False
 
     if gradient_checkpointing:
-        model.gradient_checkpointing_enable()
+        try:
+            model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+        except TypeError:
+            model.gradient_checkpointing_enable()
 
     if device is not None:
         model.to(device)

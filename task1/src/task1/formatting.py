@@ -207,29 +207,29 @@ def compute_token_weighted_loss(
 ) -> Tuple[torch.Tensor, int]:
     """
     Computes causal language modeling loss summed over all valid response tokens.
+    Memory-efficient implementation: extracts only active response token logits, avoiding
+    materializing gigantic cross-entropy probability buffers across unused prompt/padding tokens.
 
     Returns:
         total_token_loss: Tensor scalar (sum of cross-entropies for valid tokens)
         num_valid_tokens: int count of supervised response tokens
     """
     # Shift so that tokens < n predict n
-    shift_logits = logits[..., :-1, :].contiguous()
-    shift_labels = labels[..., 1:].contiguous()
-
-    # Flatten
-    shift_logits = shift_logits.view(-1, shift_logits.size(-1))
-    shift_labels = shift_labels.view(-1)
+    shift_logits = logits[..., :-1, :]
+    shift_labels = labels[..., 1:]
 
     valid_mask = shift_labels != -100
     num_valid_tokens = int(valid_mask.sum().item())
 
     if num_valid_tokens == 0:
-        return torch.tensor(0.0, device=logits.device, requires_grad=True), 0
+        return logits.sum() * 0.0, 0
+
+    active_logits = shift_logits[valid_mask]
+    active_labels = shift_labels[valid_mask]
 
     loss_sum = F.cross_entropy(
-        shift_logits,
-        shift_labels,
-        ignore_index=-100,
+        active_logits,
+        active_labels,
         reduction="sum",
     )
     return loss_sum, num_valid_tokens
