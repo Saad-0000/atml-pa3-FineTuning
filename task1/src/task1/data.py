@@ -111,16 +111,43 @@ def prepare_metamathqa_subset(
     logger.info(f"Streaming/loading {source_dataset_name} in source order...")
     ds = load_dataset(source_dataset_name, split="train")
 
+    # Run tokenizer sanity test on dummy example before scanning full dataset
+    test_tok, test_reason, test_diag = tokenize_training_example(
+        tokenizer=tokenizer,
+        question="Solve for x: 2x = 4.",
+        response="Dividing both sides by 2 gives x = 2.",
+        max_seq_length=max_seq_length,
+        enable_thinking=enable_thinking,
+        return_diagnostics=True,
+    )
+    if test_tok is None:
+        logger.error(
+            f"PREFLIGHT SANITY CHECK FAILED on tokenizer! "
+            f"Reason: {test_reason}, Diagnostics: {test_diag}"
+        )
+        raise RuntimeError(
+            f"Tokenizer failed chat template sanity check with reason: {test_reason} ({test_diag}). "
+            "Please ensure transformers is updated and the model tokenizer is initialized correctly."
+        )
+    logger.info(
+        f"Tokenizer preflight sanity check passed: test_seq_len={test_tok['seq_len']}, "
+        f"prompt_len={test_tok['prompt_len']}, supervised={test_tok['num_supervised_tokens']}."
+    )
+
     selected_examples: List[Dict[str, Any]] = []
     stats = {
         "scanned_total": 0,
         "excluded_empty": 0,
         "excluded_gsm8k_leakage": 0,
         "excluded_overlength": 0,
+        "excluded_prompt_boundary": 0,
+        "excluded_no_supervised": 0,
+        "excluded_tokenization_error": 0,
         "selected_total": 0,
         "target_count": target_count,
     }
 
+    rejection_counts_by_reason: Dict[str, int] = {}
     pbar = tqdm(total=target_count, desc="Filtering MetaMathQA")
 
     for idx, row in enumerate(ds):
@@ -134,6 +161,11 @@ def prepare_metamathqa_subset(
         # 1. Non-empty check
         if not query or not response or not query.strip() or not response.strip():
             stats["excluded_empty"] += 1
+            if stats["excluded_empty"] <= 5:
+                logger.info(
+                    f"[DIAGNOSTIC] Excluded empty example #{stats['scanned_total']}: "
+                    f"query_len={len(query)}, response_len={len(response)}"
+                )
             continue
 
         # 2. Leakage check
@@ -141,18 +173,39 @@ def prepare_metamathqa_subset(
         norm_orig = normalize_text(orig_q) if orig_q else ""
         if norm_query in gsm8k_test_set or (norm_orig and norm_orig in gsm8k_test_set):
             stats["excluded_gsm8k_leakage"] += 1
+            if stats["excluded_gsm8k_leakage"] <= 5:
+                logger.info(
+                    f"[DIAGNOSTIC] Excluded GSM8K leakage #{stats['scanned_total']}: "
+                    f"Q: {query[:80]!r}"
+                )
             continue
 
         # 3. Formatted tokenization & length cap check (no truncation)
-        tokenized = tokenize_training_example(
+        tokenized, reason, diag_info = tokenize_training_example(
             tokenizer=tokenizer,
             question=query,
             response=response,
             max_seq_length=max_seq_length,
             enable_thinking=enable_thinking,
+            return_diagnostics=True,
         )
         if tokenized is None:
-            stats["excluded_overlength"] += 1
+            if reason == "overlength":
+                stats["excluded_overlength"] += 1
+            elif reason == "prompt_ge_seq":
+                stats["excluded_prompt_boundary"] += 1
+            elif reason == "no_supervised_tokens":
+                stats["excluded_no_supervised"] += 1
+            else:
+                stats["excluded_tokenization_error"] += 1
+
+            rejection_counts_by_reason[reason] = rejection_counts_by_reason.get(reason, 0) + 1
+            if rejection_counts_by_reason[reason] <= 5:
+                logger.info(
+                    f"[DIAGNOSTIC] Excluded example #{stats['scanned_total']} (reason={reason}, count={rejection_counts_by_reason[reason]}): "
+                    f"seq_len={diag_info.get('seq_len')}, prompt_len={diag_info.get('prompt_len')}, max={max_seq_length} | "
+                    f"Q: {query[:60]!r} | R: {response[:60]!r}"
+                )
             continue
 
         # Retained example record
@@ -173,12 +226,23 @@ def prepare_metamathqa_subset(
         stats["selected_total"] += 1
         pbar.update(1)
 
+        if stats["selected_total"] <= 5:
+            logger.info(
+                f"[DIAGNOSTIC] Accepted example #{stats['selected_total']} (source_idx={idx}): "
+                f"seq_len={tokenized['seq_len']}, prompt_len={tokenized['prompt_len']}, "
+                f"supervised_tokens={tokenized['num_supervised_tokens']} | "
+                f"Q: {query[:60]!r} | R: {response[:60]!r}"
+            )
+
         if stats["scanned_total"] % 5000 == 0:
             logger.info(
                 f"Scan progress: {stats['scanned_total']} scanned | "
                 f"{stats['selected_total']}/{target_count} selected | "
                 f"excluded: {stats['excluded_overlength']} overlength, "
-                f"{stats['excluded_gsm8k_leakage']} leakage, {stats['excluded_empty']} empty"
+                f"{stats['excluded_prompt_boundary']} prompt>=seq, "
+                f"{stats['excluded_no_supervised']} no_supervised, "
+                f"{stats['excluded_gsm8k_leakage']} leakage, "
+                f"{stats['excluded_empty']} empty"
             )
 
         if len(selected_examples) >= target_count:

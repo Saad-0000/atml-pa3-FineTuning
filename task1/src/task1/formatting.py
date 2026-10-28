@@ -21,13 +21,40 @@ def format_chat_conversation(question: str, response: str, enable_thinking: bool
     ]
 
 
+def _extract_token_ids(output: Any) -> List[int]:
+    """
+    Safely extracts a flat list of integer token IDs from tokenizer outputs.
+    Handles:
+    - Raw list of ints: [1, 2, 3]
+    - BatchEncoding or dict with 'input_ids': {'input_ids': [1, 2, 3]}
+    - PyTorch tensors / numpy arrays: tensor([1, 2, 3])
+    - Nested batched lists: [[1, 2, 3]]
+    """
+    if output is None:
+        return []
+    if isinstance(output, dict) or hasattr(output, "data"):
+        if "input_ids" in output:
+            output = output["input_ids"]
+    if hasattr(output, "tolist"):
+        output = output.tolist()
+    if not isinstance(output, list):
+        try:
+            output = list(output)
+        except Exception:
+            output = [output]
+    if output and isinstance(output[0], list):
+        output = output[0]
+    return [int(t) for t in output]
+
+
 def tokenize_training_example(
     tokenizer: Any,
     question: str,
     response: str,
     max_seq_length: int = 2048,
     enable_thinking: bool = False,
-) -> Optional[Dict[str, Any]]:
+    return_diagnostics: bool = False,
+) -> Any:
     """
     Formats and tokenizes a single training example with proper masking.
 
@@ -37,57 +64,101 @@ def tokenize_training_example(
     - Masks user prompt tokens and padding with -100.
     - Supervises all assistant response tokens and exactly one assistant end-of-turn token.
     - Excludes examples whose formatted length strictly exceeds max_seq_length.
+
+    Args:
+        tokenizer: Pre-trained tokenizer.
+        question: User query string.
+        response: Assistant target response string.
+        max_seq_length: Maximum allowed total sequence length (2048 tokens).
+        enable_thinking: Whether thinking mode is enabled (False for SFT).
+        return_diagnostics: If True, returns (result_dict, reason_str, detail_dict).
+                           If False, returns Optional[Dict[str, Any]].
     """
     messages_prompt = format_chat_prompt(question, enable_thinking=enable_thinking)
     messages_full = format_chat_conversation(question, response, enable_thinking=enable_thinking)
 
-    # Apply chat template with enable_thinking=False if accepted by tokenizer
-    kwargs: Dict[str, Any] = {"tokenize": True}
-    # Check if tokenizer accepts enable_thinking in apply_chat_template
+    kwargs: Dict[str, Any] = {"tokenize": True, "return_dict": False}
+    prompt_raw = None
+    full_raw = None
+
     try:
-        prompt_ids = tokenizer.apply_chat_template(
+        prompt_raw = tokenizer.apply_chat_template(
             messages_prompt, add_generation_prompt=True, enable_thinking=enable_thinking, **kwargs
         )
-        full_ids = tokenizer.apply_chat_template(
+        full_raw = tokenizer.apply_chat_template(
             messages_full, add_generation_prompt=False, enable_thinking=enable_thinking, **kwargs
         )
-    except Exception:
-        # Fallback if tokenizer does not accept enable_thinking keyword argument or jinja variable
-        prompt_ids = tokenizer.apply_chat_template(
-            messages_prompt, add_generation_prompt=True, **kwargs
-        )
-        full_ids = tokenizer.apply_chat_template(
-            messages_full, add_generation_prompt=False, **kwargs
-        )
+    except TypeError:
+        # Fallback if tokenizer does not accept enable_thinking keyword argument
+        try:
+            prompt_raw = tokenizer.apply_chat_template(
+                messages_prompt, add_generation_prompt=True, **kwargs
+            )
+            full_raw = tokenizer.apply_chat_template(
+                messages_full, add_generation_prompt=False, **kwargs
+            )
+        except Exception as e:
+            if return_diagnostics:
+                return None, "tokenization_exception", {"exception": str(e)}
+            return None
+    except Exception as e:
+        # Fallback if jinja evaluation raises exception with enable_thinking
+        try:
+            prompt_raw = tokenizer.apply_chat_template(
+                messages_prompt, add_generation_prompt=True, **kwargs
+            )
+            full_raw = tokenizer.apply_chat_template(
+                messages_full, add_generation_prompt=False, **kwargs
+            )
+        except Exception as e2:
+            if return_diagnostics:
+                return None, "tokenization_exception", {"exception": f"{e}; fallback: {e2}"}
+            return None
 
-    if not isinstance(prompt_ids, list):
-        prompt_ids = list(prompt_ids)
-    if not isinstance(full_ids, list):
-        full_ids = list(full_ids)
+    prompt_ids = _extract_token_ids(prompt_raw)
+    full_ids = _extract_token_ids(full_raw)
 
-    # Guardrail: check length before truncation
     seq_len = len(full_ids)
+    prompt_len = len(prompt_ids)
+
+    # 1. Guardrail: check length before truncation
     if seq_len > max_seq_length:
         logger.debug(f"Excluded: seq_len {seq_len} > max {max_seq_length}")
-        return None  # Excluded: strictly exceeds cap; no truncation allowed
+        if return_diagnostics:
+            return None, "overlength", {"seq_len": seq_len, "prompt_len": prompt_len, "max_seq_length": max_seq_length}
+        return None
 
-    prompt_len = len(prompt_ids)
+    # 2. Guardrail: prompt length must be strictly smaller than full sequence
     if prompt_len >= seq_len:
         logger.debug(f"Excluded: prompt_len {prompt_len} >= seq_len {seq_len}")
+        if return_diagnostics:
+            return None, "prompt_ge_seq", {"seq_len": seq_len, "prompt_len": prompt_len}
         return None
+
+    # 3. Handle think tags boundary alignment if prompt template omitted think tokens
+    # Empty think tag sequence in Qwen3 is [151667, 271, 151668, 271] (<think>\n\n</think>\n\n)
+    empty_think_tokens = [151667, 271, 151668, 271]
+    if (
+        full_ids[:prompt_len] == prompt_ids
+        and seq_len >= prompt_len + len(empty_think_tokens)
+        and full_ids[prompt_len : prompt_len + len(empty_think_tokens)] == empty_think_tokens
+        and not enable_thinking
+    ):
+        # Empty think tokens belong to header; mask them out as prompt tokens
+        prompt_len += len(empty_think_tokens)
 
     # Construct labels: -100 for prompt tokens, token ID for response + EOT
     labels = [-100] * prompt_len + list(full_ids[prompt_len:])
-
-    # Token strings for auditing
     attention_mask = [1] * seq_len
 
     num_supervised_tokens = sum(1 for lbl in labels if lbl != -100)
     if num_supervised_tokens <= 0:
         logger.debug("Excluded: num_supervised_tokens <= 0")
+        if return_diagnostics:
+            return None, "no_supervised_tokens", {"seq_len": seq_len, "prompt_len": prompt_len, "num_supervised": 0}
         return None
 
-    return {
+    res = {
         "input_ids": full_ids,
         "attention_mask": attention_mask,
         "labels": labels,
@@ -95,6 +166,9 @@ def tokenize_training_example(
         "prompt_len": prompt_len,
         "num_supervised_tokens": num_supervised_tokens,
     }
+    if return_diagnostics:
+        return res, "ok", {"seq_len": seq_len, "prompt_len": prompt_len, "num_supervised": num_supervised_tokens}
+    return res
 
 
 def collate_effective_batch(

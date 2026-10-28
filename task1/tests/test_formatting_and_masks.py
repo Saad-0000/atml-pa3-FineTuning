@@ -75,6 +75,57 @@ class TestFormattingAndMasks(unittest.TestCase):
         self.assertEqual(batch["attention_mask"][1, 2].item(), 0)
         self.assertEqual(batch["labels"][1, 2].item(), -100)
 
+    def test_batch_encoding_dict_output_handling(self):
+        class DictDummyTokenizer:
+            def apply_chat_template(self, messages, add_generation_prompt=False, **kwargs):
+                if add_generation_prompt:
+                    return {"input_ids": [151644, 1, 2, 3]}
+                return {"input_ids": [151644, 1, 2, 3, 4, 5, 151645]}
+
+        dict_tok = DictDummyTokenizer()
+        res, reason, info = tokenize_training_example(
+            tokenizer=dict_tok,
+            question="Hi",
+            response="Hello",
+            max_seq_length=2048,
+            return_diagnostics=True,
+        )
+        self.assertEqual(reason, "ok")
+        self.assertIsNotNone(res)
+        self.assertEqual(res["seq_len"], 7)
+        self.assertEqual(res["prompt_len"], 4)
+        self.assertEqual(res["num_supervised_tokens"], 3)
+        self.assertEqual(res["labels"][:4], [-100, -100, -100, -100])
+        self.assertEqual(res["labels"][4:], [4, 5, 151645])
+
+    def test_diagnostic_rejection_reasons(self):
+        # Test overlength diagnostic
+        res, reason, info = tokenize_training_example(
+            tokenizer=self.tokenizer,
+            question="What is 2+2?",
+            response="4",
+            max_seq_length=5,
+            return_diagnostics=True,
+        )
+        self.assertIsNone(res)
+        self.assertEqual(reason, "overlength")
+        self.assertIn("seq_len", info)
+        self.assertGreater(info["seq_len"], 5)
+
+        # Test empty response (prompt_ge_seq)
+        class EmptyRespTokenizer:
+            def apply_chat_template(self, messages, add_generation_prompt=False, **kwargs):
+                return [1, 2, 3, 4]
+
+        res_empty, reason_empty, _ = tokenize_training_example(
+            tokenizer=EmptyRespTokenizer(),
+            question="Hi",
+            response="",
+            return_diagnostics=True,
+        )
+        self.assertIsNone(res_empty)
+        self.assertEqual(reason_empty, "prompt_ge_seq")
+
 
 if __name__ == "__main__":
     unittest.main()
