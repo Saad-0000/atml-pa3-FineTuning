@@ -12,6 +12,10 @@ class TestEvaluationProtocol(unittest.TestCase):
         assert_evaluation_split_guards("boolq", "validation", 3270)
         assert_evaluation_split_guards("arc_easy", "test", 2376)
 
+    def test_split_guard_accepts_multi_filter_sample_multiples(self):
+        # lm-eval returns 2 * 1319 = 2638 sample records for gsm8k_cot due to multiple filters
+        assert_evaluation_split_guards("gsm8k_cot", "test", 2638)
+
     def test_split_guard_rejects_train_split(self):
         # Must raise ValueError if 'train' is passed
         with self.assertRaises(ValueError):

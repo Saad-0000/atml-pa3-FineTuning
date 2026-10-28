@@ -32,8 +32,9 @@ logger = logging.getLogger("evaluate_baseline")
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate unchanged baseline model and cache reference assets")
-    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--skip-eval", action="store_true", help="Skip lm-eval benchmarks, cache assets only")
+    parser.add_argument("--force-rerun", action="store_true", help="Force re-evaluation of previously cached tasks")
     args = parser.parse_args()
 
     t1_cfg, methods_cfg, eval_cfg = get_default_configs(TASK1_ROOT)
@@ -97,6 +98,12 @@ def main():
         baseline_out_dir.mkdir(parents=True, exist_ok=True)
 
         for task_key in ["gsm8k", "hellaswag", "boolq", "arc_easy"]:
+            agg_file = baseline_out_dir / f"{task_key}_aggregates.json"
+            parquet_file = baseline_out_dir / f"{task_key}_per_example.parquet"
+            if not args.force_rerun and agg_file.exists() and parquet_file.exists():
+                logger.info(f"Task {task_key} already evaluated at {agg_file}. Skipping re-evaluation.")
+                continue
+
             logger.info(f"Evaluating baseline on {task_key}...")
             evaluate_with_lm_eval(
                 model=model,
