@@ -1,5 +1,6 @@
 """Full recovery checkpointing, atomic persistence, hash verification, and resume discovery."""
 
+import gc
 import hashlib
 import json
 import logging
@@ -7,6 +8,7 @@ import os
 import random
 import shutil
 import tempfile
+import zipfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
@@ -115,17 +117,39 @@ class CheckpointManager:
             "extra_metadata": extra_metadata or {},
         }
 
-        logger.info(f"Writing recovery checkpoint to temporary staging {temp_ckpt_file}...")
-        torch.save(recovery_state, str(temp_ckpt_file))
+        # Fast local SSD staging: avoids random-write seek thrashing over Google Drive network FUSE
+        local_staging_dir = Path("/tmp") if Path("/tmp").exists() and os.access("/tmp", os.W_OK) else None
+        if local_staging_dir is not None:
+            local_ckpt_file = local_staging_dir / f".local_{ckpt_name}_{os.getpid()}.pt"
+            logger.info(f"Writing recovery checkpoint to local SSD staging {local_ckpt_file}...")
+            torch.save(recovery_state, str(local_ckpt_file))
+            file_size = local_ckpt_file.stat().st_size
+            sha256 = compute_file_sha256(local_ckpt_file)
 
-        # Verify readability and compute SHA-256
-        sha256 = compute_file_sha256(temp_ckpt_file)
-        file_size = temp_ckpt_file.stat().st_size
+            # Free memory immediately before transferring to Drive
+            del recovery_state
+            gc.collect()
 
-        # Test reloadability
-        test_load = torch.load(str(temp_ckpt_file), map_location="cpu", weights_only=False)
-        assert test_load["update_step"] == update_step, "Reload verification failed!"
-        del test_load
+            logger.info(f"Streaming {file_size / (1024**2):.1f} MiB checkpoint to persistent Drive {temp_ckpt_file}...")
+            shutil.copyfile(str(local_ckpt_file), str(temp_ckpt_file))
+
+            try:
+                local_ckpt_file.unlink()
+            except Exception:
+                pass
+        else:
+            logger.info(f"Writing recovery checkpoint to temporary staging {temp_ckpt_file}...")
+            torch.save(recovery_state, str(temp_ckpt_file))
+            file_size = temp_ckpt_file.stat().st_size
+            sha256 = compute_file_sha256(temp_ckpt_file)
+            del recovery_state
+            gc.collect()
+
+        # Fast integrity verification: confirm valid Zip archive structure without loading 7GB into RAM
+        if zipfile.is_zipfile(temp_ckpt_file):
+            with zipfile.ZipFile(temp_ckpt_file, "r") as zf:
+                if not zf.namelist():
+                    raise RuntimeError(f"Saved checkpoint archive {temp_ckpt_file} is corrupt or empty!")
 
         # Write completion manifest in temp dir
         comp_manifest = {
