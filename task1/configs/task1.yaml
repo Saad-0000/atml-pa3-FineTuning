@@ -37,7 +37,7 @@ data:
   cache_dir: "artifacts/data_cache"
 
 checkpointing:
-  milestones_updates: [312, 625, 937, 1250]
+  milestones_updates: [625, 1250]
   milestones_examples: [9984, 20000, 29984, 40000]
   emergency_save_interval_updates: 10000
   keep_latest: 2
