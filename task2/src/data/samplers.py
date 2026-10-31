@@ -53,6 +53,9 @@ class StageMixtureSampler:
         self.mixture_counts = dict(state.get("mixture_counts", self.mixture_counts))
         self.total_draws = state.get("total_draws", self.total_draws)
 
+    def sample_draw(self) -> List[Dict[str, Any]]:
+        return self.draw_pair_or_two_examples()
+
     def draw_pair_or_two_examples(self) -> List[Dict[str, Any]]:
         """
         Draws 2 examples according to the current stage sampling policy.
@@ -140,8 +143,10 @@ class StageMixtureSampler:
             "pair_role": "image_a",
             "image_id": img_a["image_id"],
             "question": q,
+            "answer": ans_a,
             "target_text": ans_a,
             "component": pair_type,
+            "is_caption": False,
         }
         ex_b = {
             "example_id": f"{pair_id}_b",
@@ -149,7 +154,49 @@ class StageMixtureSampler:
             "pair_role": "image_b",
             "image_id": img_b["image_id"],
             "question": q,
+            "answer": ans_b,
             "target_text": ans_b,
             "component": pair_type,
+            "is_caption": False,
         }
         return [ex_a, ex_b]
+
+
+class Stage2MixtureSampler(StageMixtureSampler):
+    """Stage 2: 50% presence, 25% counting, 25% caption replay."""
+
+    def __init__(
+        self,
+        presence_pool: Optional[List[Dict[str, Any]]] = None,
+        counting_pool: Optional[List[Dict[str, Any]]] = None,
+        caption_pool: Optional[List[Dict[str, Any]]] = None,
+        seed: int = 6306,
+    ):
+        super().__init__(
+            seed=seed,
+            stage_index=2,
+            presence_pool=presence_pool,
+            counting_pool=counting_pool,
+            caption_pool=caption_pool,
+        )
+
+
+class Stage3MixtureSampler(StageMixtureSampler):
+    """Stage 3: 70% VQAv2, 10% presence, 10% counting, 10% caption replay."""
+
+    def __init__(
+        self,
+        vqav2_pool: Optional[List[Dict[str, Any]]] = None,
+        presence_pool: Optional[List[Dict[str, Any]]] = None,
+        counting_pool: Optional[List[Dict[str, Any]]] = None,
+        caption_pool: Optional[List[Dict[str, Any]]] = None,
+        seed: int = 6307,
+    ):
+        super().__init__(
+            seed=seed,
+            stage_index=3,
+            vqav2_pool=vqav2_pool,
+            presence_pool=presence_pool,
+            counting_pool=counting_pool,
+            caption_pool=caption_pool,
+        )

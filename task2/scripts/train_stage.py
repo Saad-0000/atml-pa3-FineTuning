@@ -110,13 +110,13 @@ def create_sampler_batch_generator(
         # Need microbatch_size / 2 draws per microbatch (e.g. 4 draws = 8 examples)
         num_draws = max(1, microbatch_size // 2)
         for _ in range(num_draws):
-            draw_items = sampler.sample_draw()
+            draw_items = sampler.sample_draw() if hasattr(sampler, "sample_draw") else sampler.draw_pair_or_two_examples()
             for item in draw_items:
                 batch.append({
                     "visual_features": feature_cache.get(item.get("image_id")),
                     "question": item.get("question", ""),
-                    "answer": item.get("answer", ""),
-                    "is_caption": item.get("is_caption", False),
+                    "answer": item.get("answer") or item.get("target_text") or item.get("caption", ""),
+                    "is_caption": item.get("is_caption", item.get("component") == "coco_captions"),
                 })
         yield batch
 
