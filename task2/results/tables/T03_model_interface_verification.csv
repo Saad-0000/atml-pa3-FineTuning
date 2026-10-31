@@ -1,0 +1,8 @@
+Component / Test,Specification,Status
+Vision Encoder,google/siglip-base-patch16-224,PASS
+Language Model,Qwen/Qwen3-0.6B,PASS
+Connector Architecture,MLP (768 -> 1024 -> GELU -> 1024),PASS
+Visual Token Count,196 tokens (14x14),PASS
+Autograd Gradient Flow,"Nonzero finite connector grad, frozen Qwen",PASS
+Connector Scale Factor,1.6672,PASS
+Microbatch 8 Memory Smoke,Peak VRAM: 96.8 MB,PASS

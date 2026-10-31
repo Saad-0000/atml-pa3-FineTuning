@@ -1,0 +1,20 @@
+# T12: Evidence Completeness
+
+| requirement_id | title | mandatory | script | status |
+| --- | --- | --- | --- | --- |
+| RE-01 | Main Training Loss Curve (Stage Boundaries at 2250, 3750) | True | task2/scripts/build_results.py | PASS |
+| RE-02 | Development Caption Reference Loss Curve | True | task2/scripts/build_results.py | INCOMPLETE |
+| RE-03 | Development Answer NLL Curves Across 3 Conditions | True | task2/scripts/build_results.py | INCOMPLETE |
+| RE-04 | Development Image-Swap Penalty Curves (DeltaNLL) | True | task2/scripts/build_results.py | INCOMPLETE |
+| RE-05 | Development Checkpoint Evaluation Table (T06) | True | task2/scripts/evaluate_dev.py | INCOMPLETE |
+| RE-06 | Final Grounding Results Table and Plots (4 Conditions, 95% CIs) | True | task2/scripts/evaluate_final.py | INCOMPLETE |
+| RE-07 | Final Natural VQAv2 Results Table and Plots (4 Conditions, 95% CIs) | True | task2/scripts/evaluate_final.py | INCOMPLETE |
+| RE-08 | Correct-Image Advantage Over Swaps (Table T09, Plot P10) | True | task2/scripts/build_results.py | INCOMPLETE |
+| RE-09 | Qualitative Aligned Complementary Inspection Sheet & Manifest | True | task2/scripts/run_qualitative.py | INCOMPLETE |
+| RE-10 | Resource and Computational Cost Comparison (T10, P12) | True | task2/scripts/build_results.py | PASS |
+| RE-11 | Dataset Inventory & Filtering Audit (T01, T02) | True | task2/scripts/prepare_data.py | PASS |
+| RE-12 | Model/Interface Verification & Scale Calibration (T03) | True | task2/scripts/preflight.py | PASS |
+| RE-13 | Training Configuration and Realized Mixture Counts (T04, T05, P11) | True | task2/scripts/build_results.py | PASS |
+| RE-14 | Checkpoint and Recovery Audit (T11) | True | task2/scripts/build_results.py | PASS |
+| RE-15 | Optional 49-Token Visual Compression Comparison | False | task2/scripts/optional_compression.py | NOT_RUN_OPTIONAL |
+

@@ -1,0 +1,16 @@
+# Ignore large datasets, weights, features, and local checkpoints in Git
+checkpoints/
+feature_cache/
+artifacts/
+logs/
+results/data/
+results/predictions/
+results/bootstrap/
+__pycache__/
+*.pyc
+*.pt
+*.bin
+*.safetensors
+*.parquet
+.ipynb_checkpoints/
+*.tmp*

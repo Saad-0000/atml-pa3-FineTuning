@@ -1,0 +1,7 @@
+Filter Rule,Count,Remaining,Status
+Total VQAv2 Candidates Inspected,"443,757","443,757",PASS
+Consensus Answer Difference,"189,420","189,420",PASS
+Annotator Agreement >= 8/10 on both images,"12,850","12,850",PASS
+Train2014 vs Val2014 Split Integrity,"12,850","12,850",PASS
+Mutual Image Disjointness (Train/Dev/Test),Strict 0 Overlap,All Disjoint,PASS
+Final Natural VQAv2 Selected Pairs,"1,664 pairs","1,664",PASS

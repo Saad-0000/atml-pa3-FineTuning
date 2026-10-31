@@ -1,0 +1,46 @@
+# Three-Stage Training Schedule Configuration
+# Assignment: EE-5102/CS-6304 ATML Fall 2026 PA3 Task 2
+
+stage1:
+  name: "Caption Alignment"
+  stage_index: 1
+  start_update: 0
+  updates: 2250
+  end_update: 2250
+  connector_peak_lr: 1.0e-3
+  lora_peak_lr: 0.0
+  trainable_scope: "connector_only"
+  description: "Train connector for two passes over 18,000 caption examples (36,000 presentations)"
+  data_components:
+    coco_captions: 1.0
+
+stage2:
+  name: "Visual Instruction Tuning"
+  stage_index: 2
+  start_update: 2250
+  updates: 1500
+  end_update: 3750
+  connector_peak_lr: 1.0e-4
+  lora_peak_lr: 2.0e-5
+  trainable_scope: "connector_and_lora"
+  description: "Train connector + new LoRA adapters on grounding pairs and caption replay"
+  sampler_probabilities:
+    presence: 0.50
+    counting: 0.25
+    caption_replay: 0.25
+
+stage3:
+  name: "Natural VQA Specialization"
+  stage_index: 3
+  start_update: 3750
+  updates: 750
+  end_update: 4500
+  connector_peak_lr: 5.0e-5
+  lora_peak_lr: 1.0e-5
+  trainable_scope: "connector_and_lora"
+  description: "Continue same connector + LoRA on natural VQAv2 and multi-task replay"
+  sampler_probabilities:
+    vqav2: 0.70
+    presence_replay: 0.10
+    counting_replay: 0.10
+    caption_replay: 0.10

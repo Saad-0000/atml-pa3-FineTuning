@@ -1,0 +1,17 @@
+# Task 2 Dependencies for ATML PA3
+# Compatible with PyTorch >=2.0, transformers, and Google Colab T4 / L4 environments
+
+torch>=2.1.0
+torchvision>=0.16.0
+transformers>=4.40.0
+accelerate>=0.29.0
+pillow>=10.0.0
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0
+pyarrow>=14.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+tqdm>=4.66.0
+pyyaml>=6.0
+requests>=2.31.0
+scipy>=1.11.0

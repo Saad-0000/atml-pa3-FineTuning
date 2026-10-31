@@ -1,0 +1,8 @@
+Dataset Component,Split,Target Examples,Actual Examples,Images,Status,Target Pairs,Actual Pairs,Questions
+COCO Captions,Train,"18,000",18000.0,6000.0,PASS,,,
+COCO Captions,Dev,96,96.0,96.0,PASS,,,
+Grounding Pairs,Dev,,,,PASS,24,24.0,48.0
+Grounding Pairs,Final Test,,,,PASS,64,64.0,128.0
+Natural VQAv2,Train,,,,PASS,"1,536",1536.0,3072.0
+Natural VQAv2,Dev,,,,PASS,32,32.0,64.0
+Natural VQAv2,Final Test,,,,PASS,96,96.0,192.0

@@ -1,0 +1,10 @@
+Setting / Parameter,Stage 1,Stage 2,Stage 3
+Vision Encoder,SigLIP-224 (Frozen),SigLIP-224 (Frozen),SigLIP-224 (Frozen)
+Language Backbone,Qwen3-0.6B (Frozen),Qwen3-0.6B (Frozen),Qwen3-0.6B (Frozen)
+LoRA Adapters,None,"r=16, a=32, q/k/v/o_proj",Same Stage 2 Adapters Continued
+Connector Peak LR,1e-3,1e-4,5e-5
+LoRA Peak LR,N/A,2e-5,1e-5
+Optimizer Updates,"2,250","1,500",750
+Example Presentations,"36,000","24,000","12,000"
+Effective Batch Size,"16 (micro 8, accum 2)","16 (micro 8, accum 2)","16 (micro 8, accum 2)"
+LR Warmup & Decay,"5% warmup, cosine to 10%","5% warmup, cosine to 10%","5% warmup, cosine to 10%"

@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "dictionaries": {
+    "split_image_ids": {
+      "path": "results/data/split_image_ids.json",
+      "description": "Mutually disjoint image ID sets for train2014, dev, and test.",
+      "format": "json",
+      "schema_version": "1.0",
+      "exists": true,
+      "sha256": "21f5a5ea8472e5f278f30ae190ff6699399865502514d49d089b691a2b003de0",
+      "size_bytes": 243924
+    },
+    "selected_example_ids": {
+      "path": "results/data/selected_example_ids.json",
+      "description": "IDs for 18,000 train captions, 96 dev captions, and QA examples.",
+      "format": "json",
+      "schema_version": "1.0",
+      "exists": true,
+      "sha256": "fcb8853b58ce2fc346b3fdf4bae14f2cbbd2813aa17233d178d97655191b7ee8",
+      "size_bytes": 212
+    },
+    "pair_inventory": {
+      "path": "results/data/pair_inventory.csv",
+      "description": "Complete inventory of all grounding and VQAv2 complementary pairs.",
+      "format": "csv",
+      "schema_version": "1.0",
+      "exists": true,
+      "sha256": "f3e34755abfa46ae847015bbc1878f4759000bab02f53908b4753a55523f5bcd",
+      "size_bytes": 44489
+    },
+    "mismatched_image_mapping": {
+      "path": "results/data/mismatched_image_mapping.json",
+      "description": "Fixed deterministic mapping for the Mismatched image evaluation condition.",
+      "format": "json",
+      "schema_version": "1.0",
+      "exists": false,
+      "sha256": null,
+      "size_bytes": 0
+    },
+    "preprocessing_and_normalization": {
+      "path": "results/data/preprocessing_and_normalization.json",
+      "description": "SigLIP resolution, normalization constants, and VQA text normalizer rules.",
+      "format": "json",
+      "schema_version": "1.0",
+      "exists": false,
+      "sha256": null,
+      "size_bytes": 0
+    }
+  }
+}

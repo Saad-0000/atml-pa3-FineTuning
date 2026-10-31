@@ -1,0 +1,67 @@
+# Task 2 Global Configuration: Vision-Language Models and Visual Grounding
+# Assignment: EE-5102/CS-6304 ATML Fall 2026 PA3 Task 2
+
+seed: 6304
+
+models:
+  vision_encoder:
+    name_or_path: "google/siglip-base-patch16-224"
+    revision: "main"
+    image_size: 224
+    patch_size: 16
+    num_patches: 196
+    hidden_dim: 768
+    apply_final_ln_once: true
+    torch_dtype: "float16"
+
+  connector:
+    in_dim: 768
+    hidden_dim: 1024
+    out_dim: 1024
+    activation: "gelu"
+    scale_calibration: true
+
+  language_model:
+    name_or_path: "Qwen/Qwen3-0.6B"
+    revision: "main"
+    enable_thinking: false
+    torch_dtype: "float16"
+    use_cache: false
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+
+training:
+  total_updates: 4500
+  microbatch_size: 8
+  gradient_accumulation_steps: 2
+  effective_batch_size: 16
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  warmup_ratio: 0.05
+  min_lr_ratio: 0.10
+  content_caps:
+    question: 80
+    caption_target: 64
+    short_answer_target: 16
+
+checkpointing:
+  save_interval_updates: 250
+  stage_endpoints: [2250, 3750, 4500]
+  keep_latest: 2
+  save_dir: "checkpoints"
+
+storage:
+  persistent_root: "/content/drive/MyDrive/ATML_PA3/task2"
+  feature_cache_dir: "feature_cache"
+  artifacts_dir: "artifacts"
+  results_dir: "results"
+  logs_dir: "logs"

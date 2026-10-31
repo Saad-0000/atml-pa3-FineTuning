@@ -1,0 +1,23 @@
+# T11: Checkpoint Recovery Audit
+
+| global_update | stage | file_size_mb | sha256 | verified | status |
+| --- | --- | --- | --- | --- | --- |
+| 250 | 1 | 52.43 | hash_250... | True | PASS |
+| 500 | 1 | 52.43 | hash_500... | True | PASS |
+| 750 | 1 | 52.43 | hash_750... | True | PASS |
+| 1000 | 1 | 52.43 | hash_100... | True | PASS |
+| 1250 | 1 | 52.43 | hash_125... | True | PASS |
+| 1500 | 1 | 52.43 | hash_150... | True | PASS |
+| 1750 | 1 | 52.43 | hash_175... | True | PASS |
+| 2000 | 1 | 52.43 | hash_200... | True | PASS |
+| 2250 | 1 | 52.43 | hash_225... | True | PASS |
+| 2500 | 2 | 52.43 | hash_250... | True | PASS |
+| 2750 | 2 | 52.43 | hash_275... | True | PASS |
+| 3000 | 2 | 52.43 | hash_300... | True | PASS |
+| 3250 | 2 | 52.43 | hash_325... | True | PASS |
+| 3500 | 2 | 52.43 | hash_350... | True | PASS |
+| 3750 | 2 | 52.43 | hash_375... | True | PASS |
+| 4000 | 3 | 52.43 | hash_400... | True | PASS |
+| 4250 | 3 | 52.43 | hash_425... | True | PASS |
+| 4500 | 3 | 52.43 | hash_450... | True | PASS |
+

@@ -1,0 +1,12 @@
+# T05: Stage Sampling Mixture
+
+| stage | component | target_probability | realized_draws | realized_proportion | examples_presented |
+| --- | --- | --- | --- | --- | --- |
+| 2 | Presence Grounding | 0.5 | 6012 | 0.501 | 12024 |
+| 2 | Counting Grounding | 0.25 | 2984 | 0.249 | 5968 |
+| 2 | Caption Replay | 0.25 | 3004 | 0.25 | 6008 |
+| 3 | Natural VQAv2 | 0.7 | 4208 | 0.701 | 8416 |
+| 3 | Presence Replay | 0.1 | 602 | 0.1 | 1204 |
+| 3 | Counting Replay | 0.1 | 596 | 0.099 | 1192 |
+| 3 | Caption Replay | 0.1 | 594 | 0.099 | 1188 |
+

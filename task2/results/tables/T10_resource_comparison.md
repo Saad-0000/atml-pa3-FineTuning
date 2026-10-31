@@ -1,0 +1,10 @@
+# T10: Resource Comparison
+
+| phase | runtime_minutes | peak_gpu_mem_mb | throughput | storage_mb |
+| --- | --- | --- | --- | --- |
+| SigLIP Caching | 14.2 | 2150.0 | 48.2 imgs/s | 118.0 |
+| Stage 1 (Conn) | 38.5 | 6420.0 | 15.6 ex/s | 145.0 |
+| Stage 2 (LoRA) | 26.1 | 7890.0 | 15.3 ex/s | 160.0 |
+| Stage 3 (VQA) | 13.4 | 7910.0 | 14.9 ex/s | 160.0 |
+| Final Eval | 8.7 | 3120.0 | 18.2 ans/s | 24.0 |
+
