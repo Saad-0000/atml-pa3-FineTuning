@@ -184,7 +184,10 @@ def main():
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
         except Exception as e:
-            logger.warning(f"Could not generate qualitative responses for {cond_id}: {e}")
+            logger.warning(
+                f"Could not generate qualitative responses for {cond_id}: {type(e).__name__}: {e}",
+                exc_info=True,
+            )
 
     qual_dir = t1_cfg.results_dir / "qualitative"
     qual_dir.mkdir(parents=True, exist_ok=True)

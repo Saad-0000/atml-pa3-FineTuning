@@ -17,6 +17,7 @@ logger = logging.getLogger("task1.qualitative")
 def load_qualitative_prompts(prompts_path: Path | str) -> List[Dict[str, Any]]:
     """
     Loads the 24 qualitative prompts from first_plot_questions.yaml.
+    Supports both flat lists, nested questions lists, and questions dictionaries.
     If the file is absent, raises FileNotFoundError (hard blocker).
     """
     p = Path(prompts_path)
@@ -30,30 +31,54 @@ def load_qualitative_prompts(prompts_path: Path | str) -> List[Dict[str, Any]]:
     with open(p, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
-    # Normalize structure into list of 24 prompts
-    # Expected: 8 underlying questions, each with plain, json, template formats
+    raw_items = []
+    if isinstance(data, list):
+        raw_items = data
+    elif isinstance(data, dict):
+        if "questions" in data:
+            raw_items = data["questions"]
+        elif "prompts" in data:
+            raw_items = data["prompts"]
+        else:
+            raw_items = data
+
     prompts: List[Dict[str, Any]] = []
 
-    if isinstance(data, list):
-        prompts = data
-    elif isinstance(data, dict):
-        questions = data.get("questions", data.get("prompts", []))
-        if isinstance(questions, list):
-            prompts = questions
-        elif isinstance(questions, dict):
-            for q_id, q_data in questions.items():
-                if isinstance(q_data, dict):
-                    for fmt in ["plain", "json", "template"]:
-                        if fmt in q_data:
-                            prompts.append({
-                                "question_id": q_id,
-                                "format": fmt,
-                                "prompt": q_data[fmt],
-                            })
+    # Case 1: Dict of questions keyed by ID
+    if isinstance(raw_items, dict):
+        for q_id, q_data in raw_items.items():
+            if isinstance(q_data, dict):
+                for fmt in ["plain", "json", "template"]:
+                    if fmt in q_data:
+                        prompts.append({
+                            "question_id": str(q_id),
+                            "format": fmt,
+                            "prompt": q_data[fmt],
+                        })
+    # Case 2: List of questions
+    elif isinstance(raw_items, list):
+        for idx, item in enumerate(raw_items):
+            if not isinstance(item, dict):
+                continue
+            # If already flattened (has both 'format' and ('prompt' or 'text'))
+            if "format" in item and ("prompt" in item or "text" in item):
+                prompts.append({
+                    "question_id": str(item.get("question_id", item.get("id", f"q{idx}"))),
+                    "format": item["format"],
+                    "prompt": item.get("prompt", item.get("text", "")),
+                })
+            else:
+                # It's an unflattened question with formats as keys
+                q_id = str(item.get("question_id", item.get("id", f"q{idx+1}")))
+                for fmt in ["plain", "json", "template"]:
+                    if fmt in item:
+                        prompts.append({
+                            "question_id": q_id,
+                            "format": fmt,
+                            "prompt": item[fmt],
+                        })
 
-    if len(prompts) != 24:
-        logger.warning(f"Loaded {len(prompts)} prompts from {p} (expected exactly 24: 8 questions x 3 formats).")
-
+    logger.info(f"Loaded {len(prompts)} qualitative prompts from {p}.")
     return prompts
 
 
@@ -124,32 +149,47 @@ def generate_qualitative_responses(
     Generates 24 greedy responses for a model condition with thinking disabled.
     """
     model.eval()
+    orig_use_cache = getattr(model.config, "use_cache", True)
+    model.config.use_cache = True  # Enable KV cache during generation for speed
+
     responses: List[Dict[str, Any]] = []
 
     for item in prompts:
-        q_id = item.get("question_id", "q")
+        q_id = str(item.get("question_id", item.get("id", "q")))
         fmt = item.get("format", "plain")
-        prompt_text = item.get("prompt", "")
+        prompt_text = item.get("prompt") or item.get(fmt) or item.get("text") or ""
 
-        messages = format_chat_prompt(prompt_text, enable_thinking=False)
+        messages = format_chat_prompt(str(prompt_text), enable_thinking=False)
         try:
-            input_ids = tokenizer.apply_chat_template(
+            prompt_encoded = tokenizer.apply_chat_template(
                 messages, add_generation_prompt=True, tokenize=True, return_tensors="pt", enable_thinking=False
-            ).to(device)
-        except TypeError:
-            input_ids = tokenizer.apply_chat_template(
+            )
+        except Exception:
+            prompt_encoded = tokenizer.apply_chat_template(
                 messages, add_generation_prompt=True, tokenize=True, return_tensors="pt"
-            ).to(device)
+            )
+
+        if isinstance(prompt_encoded, dict) or hasattr(prompt_encoded, "input_ids"):
+            input_ids = prompt_encoded["input_ids"].to(device)
+            attention_mask = prompt_encoded.get("attention_mask")
+            if attention_mask is not None:
+                attention_mask = attention_mask.to(device)
+        else:
+            input_ids = prompt_encoded.to(device)
+            if input_ids.dim() == 1:
+                input_ids = input_ids.unsqueeze(0)
+            attention_mask = torch.ones_like(input_ids, device=device)
+
+        gen_kwargs = {
+            "max_new_tokens": max_new_tokens,
+            "do_sample": False,
+            "pad_token_id": tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
+        }
+        if attention_mask is not None:
+            gen_kwargs["attention_mask"] = attention_mask
 
         with torch.no_grad():
-            output_tokens = model.generate(
-                input_ids=input_ids,
-                max_new_tokens=max_new_tokens,
-                do_sample=False,  # Greedy
-                temperature=None,
-                top_p=None,
-                pad_token_id=tokenizer.pad_token_id,
-            )
+            output_tokens = model.generate(input_ids=input_ids, **gen_kwargs)
 
         gen_tokens = output_tokens[0][input_ids.shape[-1] :]
         gen_text = tokenizer.decode(gen_tokens, skip_special_tokens=True)
