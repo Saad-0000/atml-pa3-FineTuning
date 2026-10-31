@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
+import torch
 import yaml
 
 from .formatting import format_chat_prompt
