@@ -17,8 +17,11 @@ logger = logging.getLogger("task1.qualitative")
 def load_qualitative_prompts(prompts_path: Path | str) -> List[Dict[str, Any]]:
     """
     Loads the 24 qualitative prompts from first_plot_questions.yaml.
-    Supports both flat lists, nested questions lists, and questions dictionaries.
-    If the file is absent, raises FileNotFoundError (hard blocker).
+    Supports all YAML layouts:
+    - Format-first (keys: plain, json, template -> lists or dicts of questions)
+    - Question-first (list or dict of questions, each with plain/json/template or formats: {...})
+    - Flat list of 24 prompts
+    If the file is absent, raises FileNotFoundError.
     """
     p = Path(prompts_path)
     if not p.is_file():
@@ -28,57 +31,126 @@ def load_qualitative_prompts(prompts_path: Path | str) -> List[Dict[str, Any]]:
             f"Per assignment instructions, do not invent substitute questions."
         )
 
+    file_size = p.stat().st_size
+    if file_size == 0:
+        logger.error(
+            f"Qualitative prompts file {p} is EMPTY (0 bytes)! "
+            f"Please copy the authentic first_plot_questions.yaml from course materials into this location."
+        )
+        return []
+
     with open(p, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
-    raw_items = []
-    if isinstance(data, list):
-        raw_items = data
-    elif isinstance(data, dict):
-        if "questions" in data:
-            raw_items = data["questions"]
-        elif "prompts" in data:
-            raw_items = data["prompts"]
-        else:
-            raw_items = data
+    if data is None:
+        logger.error(
+            f"Qualitative prompts file {p} parsed as None (empty or whitespace only). "
+            f"Please check file contents."
+        )
+        return []
+
+    logger.info(f"Inspecting {p} (size={file_size} bytes, type={type(data).__name__})")
+
+    # Unwrap single top-level container if present (e.g., {"questions": ...} or {"first_plot_questions": ...})
+    if isinstance(data, dict):
+        for wrapper_key in ["questions", "prompts", "first_plot_questions", "items", "data", "benchmark"]:
+            if wrapper_key in data and isinstance(data[wrapper_key], (dict, list)):
+                data = data[wrapper_key]
+                break
 
     prompts: List[Dict[str, Any]] = []
 
-    # Case 1: Dict of questions keyed by ID
-    if isinstance(raw_items, dict):
-        for q_id, q_data in raw_items.items():
+    # Format normalizer helper
+    def norm_fmt(k: str) -> str:
+        k_clean = str(k).strip().lower()
+        if "json" in k_clean:
+            return "json"
+        elif "template" in k_clean:
+            return "template"
+        elif "plain" in k_clean or "raw" in k_clean or "text" in k_clean:
+            return "plain"
+        return k_clean
+
+    # Layout 1: Format-first mapping (e.g. {plain: [...], json: [...], template: [...]})
+    if isinstance(data, dict):
+        keys_lower = {norm_fmt(k): k for k in data.keys()}
+        if any(f in keys_lower for f in ["plain", "json", "template"]):
+            for fmt in ["plain", "json", "template"]:
+                if fmt in keys_lower:
+                    orig_key = keys_lower[fmt]
+                    fmt_items = data[orig_key]
+                    if isinstance(fmt_items, list):
+                        for idx, p_text in enumerate(fmt_items):
+                            text = p_text if isinstance(p_text, str) else (p_text.get("prompt") or p_text.get("text", ""))
+                            prompts.append({
+                                "question_id": f"q{idx+1}",
+                                "format": fmt,
+                                "prompt": str(text),
+                            })
+                    elif isinstance(fmt_items, dict):
+                        for q_id, p_text in fmt_items.items():
+                            text = p_text if isinstance(p_text, str) else (p_text.get("prompt") or p_text.get("text", ""))
+                            prompts.append({
+                                "question_id": str(q_id),
+                                "format": fmt,
+                                "prompt": str(text),
+                            })
+
+    # Layout 2: Dict of questions keyed by ID (e.g. {q1: {plain: ..., json: ...}, ...})
+    if not prompts and isinstance(data, dict):
+        for q_id, q_data in data.items():
             if isinstance(q_data, dict):
-                for fmt in ["plain", "json", "template"]:
-                    if fmt in q_data:
+                sub_fmts = q_data.get("formats", q_data)
+                for k, v in sub_fmts.items():
+                    fmt = norm_fmt(k)
+                    if fmt in ["plain", "json", "template"]:
+                        text = v if isinstance(v, str) else (v.get("prompt") or v.get("text", ""))
                         prompts.append({
                             "question_id": str(q_id),
                             "format": fmt,
-                            "prompt": q_data[fmt],
-                        })
-    # Case 2: List of questions
-    elif isinstance(raw_items, list):
-        for idx, item in enumerate(raw_items):
-            if not isinstance(item, dict):
-                continue
-            # If already flattened (has both 'format' and ('prompt' or 'text'))
-            if "format" in item and ("prompt" in item or "text" in item):
-                prompts.append({
-                    "question_id": str(item.get("question_id", item.get("id", f"q{idx}"))),
-                    "format": item["format"],
-                    "prompt": item.get("prompt", item.get("text", "")),
-                })
-            else:
-                # It's an unflattened question with formats as keys
-                q_id = str(item.get("question_id", item.get("id", f"q{idx+1}")))
-                for fmt in ["plain", "json", "template"]:
-                    if fmt in item:
-                        prompts.append({
-                            "question_id": q_id,
-                            "format": fmt,
-                            "prompt": item[fmt],
+                            "prompt": str(text),
                         })
 
-    logger.info(f"Loaded {len(prompts)} qualitative prompts from {p}.")
+    # Layout 3: List of questions or prompts
+    if not prompts and isinstance(data, list):
+        for idx, item in enumerate(data):
+            if isinstance(item, str):
+                prompts.append({
+                    "question_id": f"q{idx+1}",
+                    "format": "plain",
+                    "prompt": item,
+                })
+            elif isinstance(item, dict):
+                # Flat prompt item
+                if "format" in item and ("prompt" in item or "text" in item):
+                    prompts.append({
+                        "question_id": str(item.get("question_id", item.get("id", f"q{idx+1}"))),
+                        "format": norm_fmt(item["format"]),
+                        "prompt": str(item.get("prompt", item.get("text", ""))),
+                    })
+                else:
+                    # Item with format fields or 'formats' subdict
+                    q_id = str(item.get("question_id", item.get("id", f"q{idx+1}")))
+                    sub_fmts = item.get("formats", item)
+                    for k, v in sub_fmts.items():
+                        fmt = norm_fmt(k)
+                        if fmt in ["plain", "json", "template"]:
+                            text = v if isinstance(v, str) else (v.get("prompt") or v.get("text", ""))
+                            prompts.append({
+                                "question_id": q_id,
+                                "format": fmt,
+                                "prompt": str(text),
+                            })
+
+    if not prompts:
+        logger.warning(
+            f"Could not parse any qualitative prompts from {p}! "
+            f"File size: {file_size} bytes. Raw type: {type(data).__name__}. "
+            f"Raw content snippet: {str(data)[:200]}"
+        )
+    else:
+        logger.info(f"Loaded {len(prompts)} qualitative prompts from {p}.")
+
     return prompts
 
 
