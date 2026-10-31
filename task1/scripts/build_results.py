@@ -71,7 +71,24 @@ def build_benchmark_tables(t1_cfg: Any, eval_cfg: dict) -> tuple[pd.DataFrame, p
             if agg_file.exists():
                 with open(agg_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    condition_results[cond][b] = data.get("primary_score", float("nan"))
+                    score = data.get("primary_score", float("nan"))
+                    # If score is NaN or 0.0, fallback to raw_results dictionary to recover scores from lm-eval v0.4+ keys
+                    raw_res = data.get("raw_results", {})
+                    if (pd.isna(score) or score == 0.0) and raw_res:
+                        metric_candidates = [
+                            f"{b},none",
+                            "acc_norm,none",
+                            "acc_norm",
+                            "acc,none",
+                            "acc",
+                            "exact_match,flexible-extract",
+                            "exact_match",
+                        ]
+                        for mc in metric_candidates:
+                            if mc in raw_res:
+                                score = float(raw_res[mc])
+                                break
+                    condition_results[cond][b] = score
 
     df_bench = build_benchmark_summary_table(condition_results, baseline_id="baseline", benchmarks=benchmarks)
     df_ctrl = build_controlled_comparisons_table(condition_results, benchmarks=benchmarks)
@@ -178,58 +195,69 @@ def build_learning_and_regularization_plots(t1_cfg: Any) -> None:
 
 def build_resource_comparison_table(t1_cfg: Any) -> pd.DataFrame:
     tables_dir = t1_cfg.results_dir / "tables"
-    plots_dir = t1_cfg.results_dir / "plots"
+    raw_dir = t1_cfg.results_dir / "raw"
+    ckpts_dir = t1_cfg.checkpoints_dir
     tables_dir.mkdir(parents=True, exist_ok=True)
 
-    # Standard parameter counts for Qwen3-0.6B
-    # Total params ~596M
-    rows = [
-        {
-            "method": "full_ft",
-            "trainable_parameters": 596000000,
-            "trainable_pct": 100.0,
-            "peak_gpu_allocated_mib": float("nan"),
-            "training_time_sec": float("nan"),
-            "inference_checkpoint_mib": float("nan"),
-            "recovery_checkpoint_mib": float("nan"),
-        },
-        {
-            "method": "l2sp",
-            "trainable_parameters": 596000000,
-            "trainable_pct": 100.0,
-            "peak_gpu_allocated_mib": float("nan"),
-            "training_time_sec": float("nan"),
-            "inference_checkpoint_mib": float("nan"),
-            "recovery_checkpoint_mib": float("nan"),
-        },
-        {
-            "method": "lora4",
-            "trainable_parameters": 1474560,  # 7 modules * 28 layers * r=4
-            "trainable_pct": 0.25,
-            "peak_gpu_allocated_mib": float("nan"),
-            "training_time_sec": float("nan"),
-            "inference_checkpoint_mib": float("nan"),
-            "recovery_checkpoint_mib": float("nan"),
-        },
-        {
-            "method": "lora16",
-            "trainable_parameters": 5898240,  # 7 modules * 28 layers * r=16
-            "trainable_pct": 0.99,
-            "peak_gpu_allocated_mib": float("nan"),
-            "training_time_sec": float("nan"),
-            "inference_checkpoint_mib": float("nan"),
-            "recovery_checkpoint_mib": float("nan"),
-        },
-        {
-            "method": "oplora16",
-            "trainable_parameters": 5898240,
-            "trainable_pct": 0.99,
-            "peak_gpu_allocated_mib": float("nan"),
-            "training_time_sec": float("nan"),
-            "inference_checkpoint_mib": float("nan"),
-            "recovery_checkpoint_mib": float("nan"),
-        },
+    # Standard parameter counts for Qwen3-0.6B (~596M total params)
+    methods_meta = [
+        ("full_ft", 596000000, 100.0, 1250),
+        ("l2sp", 596000000, 100.0, 1250),
+        ("lora4", 1474560, 0.25, 1250),
+        ("lora16", 5898240, 0.99, 1250),
+        ("oplora16", 5898240, 0.99, 1250),
     ]
+
+    rows = []
+    for method, train_params, train_pct, final_step in methods_meta:
+        peak_gpu = float("nan")
+        training_time = float("nan")
+
+        # 1. Inspect training CSV / JSONL logs
+        train_csv = raw_dir / f"training_{method}.csv"
+        if train_csv.exists():
+            try:
+                tdf = pd.read_csv(train_csv)
+                if not tdf.empty:
+                    if "elapsed_seconds" in tdf.columns:
+                        training_time = round(float(tdf["elapsed_seconds"].max()), 2)
+                    if "gpu_max_allocated_mib" in tdf.columns:
+                        peak_gpu = round(float(tdf["gpu_max_allocated_mib"].max()), 2)
+                    elif "gpu_allocated_mib" in tdf.columns:
+                        peak_gpu = round(float(tdf["gpu_allocated_mib"].max()), 2)
+            except Exception as e:
+                logger.warning(f"Could not parse {train_csv}: {e}")
+
+        # 2. Inspect checkpoint sizes from disk
+        inf_size_mib = float("nan")
+        rec_size_mib = float("nan")
+        ckpt_dir = ckpts_dir / method / f"checkpoint_step_{final_step:04d}"
+        if ckpt_dir.exists():
+            rec_file = ckpt_dir / "training_state.pt"
+            if rec_file.exists():
+                rec_size_mib = round(rec_file.stat().st_size / (1024**2), 2)
+
+            adapter_candidates = (
+                list(ckpt_dir.glob("adapter*.*"))
+                + list(ckpt_dir.glob("lora*.*"))
+                + list(ckpt_dir.glob("model*.bin"))
+                + list(ckpt_dir.glob("model*.safetensors"))
+            )
+            if adapter_candidates:
+                inf_size_mib = round(sum(f.stat().st_size for f in adapter_candidates) / (1024**2), 2)
+            elif rec_file.exists():
+                # Inference checkpoint size estimated from trainable parameters in FP16 (2 bytes/param)
+                inf_size_mib = round((train_params * 2) / (1024**2), 2)
+
+        rows.append({
+            "method": method,
+            "trainable_parameters": train_params,
+            "trainable_pct": train_pct,
+            "peak_gpu_allocated_mib": peak_gpu,
+            "training_time_sec": training_time,
+            "inference_checkpoint_mib": inf_size_mib,
+            "recovery_checkpoint_mib": rec_size_mib,
+        })
 
     df = pd.DataFrame(rows)
     df.to_csv(tables_dir / "resource_comparison.csv", index=False)

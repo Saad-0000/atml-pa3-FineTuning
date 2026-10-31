@@ -130,6 +130,11 @@ def evaluate_with_lm_eval(
         **task_args,
     )
 
+    # Free lm-eval wrapper and clear CUDA cache to prevent leakage across tasks
+    del hflm
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
     task_results = results.get("results", {}).get(task_name, {})
     samples = results.get("samples", {}).get(task_name, [])
 
@@ -156,7 +161,21 @@ def evaluate_with_lm_eval(
     assert_evaluation_split_guards(task_name, actual_split, actual_count)
 
     primary_metric_key = spec["primary_metric"]
-    primary_score = task_results.get(primary_metric_key, 0.0)
+    primary_score = None
+    if primary_metric_key in task_results:
+        primary_score = task_results[primary_metric_key]
+    elif f"{primary_metric_key},none" in task_results:
+        primary_score = task_results[f"{primary_metric_key},none"]
+    else:
+        for k, v in task_results.items():
+            if k.startswith(primary_metric_key) and not k.endswith("_stderr"):
+                primary_score = v
+                break
+    if primary_score is None:
+        logger.warning(
+            f"Could not find metric '{primary_metric_key}' in task results keys: {list(task_results.keys())}. Defaulting to 0.0."
+        )
+        primary_score = 0.0
 
     aggregates = {
         "task_key": task_key,

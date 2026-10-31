@@ -128,7 +128,8 @@ def main():
         ],
         help="Evaluation condition to run",
     )
-    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=8, help="Batch size for evaluation (default: 8)")
+    parser.add_argument("--force-rerun", action="store_true", help="Force re-evaluation of previously completed benchmarks")
     args = parser.parse_args()
 
     t1_cfg, methods_cfg, eval_cfg = get_default_configs(TASK1_ROOT)
@@ -150,15 +151,26 @@ def main():
         try:
             model, tokenizer = load_model_for_condition(cond_id, t1_cfg, methods_cfg, device)
             for task_key in benchmarks:
-                logger.info(f"Running {task_key} for {cond_id}...")
-                evaluate_with_lm_eval(
-                    model=model,
-                    tokenizer=tokenizer,
-                    task_key=task_key,
-                    device=str(device),
-                    batch_size=args.batch_size,
-                    output_dir=out_dir,
-                )
+                agg_file = out_dir / f"{task_key}_aggregates.json"
+                if not args.force_rerun and agg_file.exists():
+                    logger.info(f"Task '{task_key}' already evaluated for {cond_id} ({agg_file}). Skipping re-evaluation.")
+                    continue
+
+                logger.info(f"Running {task_key} for {cond_id} (batch_size={args.batch_size})...")
+                try:
+                    evaluate_with_lm_eval(
+                        model=model,
+                        tokenizer=tokenizer,
+                        task_key=task_key,
+                        device=str(device),
+                        batch_size=args.batch_size,
+                        output_dir=out_dir,
+                    )
+                except Exception as task_err:
+                    logger.error(f"Task {task_key} failed for {cond_id}: {task_err}")
+                finally:
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
             del model, tokenizer
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
