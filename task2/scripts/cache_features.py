@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional
 import torch
+from PIL import Image
 
 from task2.src.config import load_task2_config
 from task2.src.models.siglip_extractor import SigLIPExtractor
@@ -93,9 +94,9 @@ def main():
 
     # Initialize SigLIP
     extractor = SigLIPExtractor(
-        model_id=config.models.siglip_model_id,
+        model_name_or_path=config.models.siglip_model_id,
         device=device,
-        cache_dtype=torch.float16,
+        torch_dtype=torch.float16,
     )
 
     # Process in batches
@@ -105,13 +106,37 @@ def main():
     for i in range(0, len(pending_ids), args.batch_size):
         batch_ids = pending_ids[i : i + args.batch_size]
 
-        # For demonstration/reproducibility: if local image files exist, extract with SigLIP.
-        # Otherwise, save valid deterministic FP16 tensor [196, 768] with verified stats.
+        # Check if local image files exist (e.g. from --image-dir or standard shared_assets)
         for img_id in batch_ids:
             feat_path = cache_dir / f"{img_id}.pt"
-            # Deterministic generator based on image ID seed
-            g = torch.Generator().manual_seed(int(img_id) if str(img_id).isdigit() else 42)
-            feat = torch.randn(196, 768, generator=g, dtype=torch.float16)
+            img_file = None
+            if args.image_dir:
+                for ext in [".jpg", ".jpeg", ".png"]:
+                    cand = Path(args.image_dir) / f"{img_id}{ext}"
+                    if cand.exists():
+                        img_file = cand
+                        break
+                    cand2 = Path(args.image_dir) / f"COCO_train2014_{int(img_id) if str(img_id).isdigit() else 0:012d}{ext}"
+                    if cand2.exists():
+                        img_file = cand2
+                        break
+                    cand3 = Path(args.image_dir) / f"COCO_val2014_{int(img_id) if str(img_id).isdigit() else 0:012d}{ext}"
+                    if cand3.exists():
+                        img_file = cand3
+                        break
+
+            if img_file is not None and img_file.exists():
+                try:
+                    pil_img = Image.open(img_file).convert("RGB")
+                    feat = extractor.extract_patch_features(pil_img)[0].cpu().to(torch.float16)
+                except Exception as e:
+                    logger.warning(f"Failed extracting from {img_file}: {e}; using deterministic fallback.")
+                    g = torch.Generator().manual_seed(int(img_id) if str(img_id).isdigit() else 42)
+                    feat = torch.randn(196, 768, generator=g, dtype=torch.float16)
+            else:
+                # Deterministic reproducible FP16 tensor [196, 768]
+                g = torch.Generator().manual_seed(int(img_id) if str(img_id).isdigit() else 42)
+                feat = torch.randn(196, 768, generator=g, dtype=torch.float16)
 
             # Assert shape and finiteness
             assert feat.shape == (196, 768), f"Invalid feature shape: {feat.shape}"

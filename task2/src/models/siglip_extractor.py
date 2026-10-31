@@ -21,25 +21,30 @@ class SiglipPatchFeatureExtractor(nn.Module):
 
     def __init__(
         self,
-        model_name_or_path: str = "google/siglip-base-patch16-224",
+        model_name_or_path: Optional[str] = None,
+        model_id: Optional[str] = None,
         revision: str = "main",
         apply_final_ln_once: bool = True,
-        torch_dtype: torch.dtype = torch.float16,
+        torch_dtype: Optional[torch.dtype] = None,
+        cache_dtype: Optional[torch.dtype] = None,
         device: Optional[torch.device] = None,
+        **kwargs,
     ):
         super().__init__()
-        self.model_name = model_name_or_path
+        resolved_model = model_name_or_path or model_id or "google/siglip-base-patch16-224"
+        resolved_dtype = torch_dtype or cache_dtype or torch.float16
+        self.model_name = resolved_model
         self.revision = revision
         self.apply_final_ln_once = apply_final_ln_once
-        self.dtype = torch_dtype
+        self.dtype = resolved_dtype
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        logger.info(f"Loading SigLIP model {model_name_or_path} (revision={revision})...")
-        self.processor = AutoProcessor.from_pretrained(model_name_or_path, revision=revision)
+        logger.info(f"Loading SigLIP model {resolved_model} (revision={revision})...")
+        self.processor = AutoProcessor.from_pretrained(resolved_model, revision=revision)
         self.vision_model = SiglipVisionModel.from_pretrained(
-            model_name_or_path,
+            resolved_model,
             revision=revision,
-            torch_dtype=torch_dtype,
+            torch_dtype=resolved_dtype,
         ).to(self.device)
 
         # Freeze vision model parameters permanently
