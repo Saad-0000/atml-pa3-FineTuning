@@ -121,16 +121,50 @@ def load_qualitative_prompts(prompts_path: Path | str) -> List[Dict[str, Any]]:
                     "prompt": item,
                 })
             elif isinstance(item, dict):
-                # Flat prompt item
-                if "format" in item and ("prompt" in item or "text" in item):
+                q_id = str(item.get("id", item.get("question_id", f"q{idx+1}")))
+
+                # Sub-case 3a: Item contains 'paraphrases' list (standard benchmark layout)
+                if "paraphrases" in item and isinstance(item["paraphrases"], list):
+                    paras = item["paraphrases"]
+                    assigned = [None] * len(paras)
+                    used_fmts = set()
+
+                    # Keyword-based format classification
+                    for p_i, p_val in enumerate(paras):
+                        p_str = str(p_val).lower()
+                        if "json" in p_str and "json" not in used_fmts:
+                            assigned[p_i] = "json"
+                            used_fmts.add("json")
+                        elif any(tok in p_str for tok in ["template", "format:", "<format>", "bracket"]) and "template" not in used_fmts:
+                            assigned[p_i] = "template"
+                            used_fmts.add("template")
+
+                    fallback_fmts = ["plain", "json", "template"]
+                    for p_i, p_val in enumerate(paras):
+                        if assigned[p_i] is None:
+                            for f_cand in fallback_fmts:
+                                if f_cand not in used_fmts:
+                                    assigned[p_i] = f_cand
+                                    used_fmts.add(f_cand)
+                                    break
+                            if assigned[p_i] is None:
+                                assigned[p_i] = fallback_fmts[min(p_i, len(fallback_fmts) - 1)]
+
+                        prompts.append({
+                            "question_id": q_id,
+                            "format": assigned[p_i],
+                            "prompt": str(p_val),
+                        })
+
+                # Sub-case 3b: Flat prompt item
+                elif "format" in item and ("prompt" in item or "text" in item):
                     prompts.append({
-                        "question_id": str(item.get("question_id", item.get("id", f"q{idx+1}"))),
+                        "question_id": q_id,
                         "format": norm_fmt(item["format"]),
                         "prompt": str(item.get("prompt", item.get("text", ""))),
                     })
                 else:
-                    # Item with format fields or 'formats' subdict
-                    q_id = str(item.get("question_id", item.get("id", f"q{idx+1}")))
+                    # Sub-case 3c: Item with format fields or 'formats' subdict
                     sub_fmts = item.get("formats", item)
                     for k, v in sub_fmts.items():
                         fmt = norm_fmt(k)
