@@ -42,6 +42,11 @@ def parse_args():
         help="Training stage to execute (1, 2, 3, or all)",
     )
     parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Run all 3 stages sequentially (convenience alias for --stage all)",
+    )
+    parser.add_argument(
         "--resume",
         action="store_true",
         help="Resume from the latest valid checkpoint in the manifest",
@@ -192,7 +197,7 @@ def main():
                 vlm.load_lora_state_dict(resume_payload["lora_state"])
 
     # Determine stages to run
-    stages_to_run = [1, 2, 3] if args.stage == "all" else [int(args.stage)]
+    stages_to_run = [1, 2, 3] if (args.all or args.stage == "all") else [int(args.stage)]
 
     for stage in stages_to_run:
         logger.info(f"Preparing batch generator for Stage {stage}...")
