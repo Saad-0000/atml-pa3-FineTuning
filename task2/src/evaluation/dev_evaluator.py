@@ -125,10 +125,17 @@ class DevEvaluator:
             suite_records = []
             for pair in pairs:
                 q = pair["question"]
-                img1_id = pair["image_id_1"]
-                img2_id = pair["image_id_2"]
-                ans1 = pair["answer_1"]
-                ans2 = pair["answer_2"]
+                if "image_a" in pair and "image_b" in pair and isinstance(pair["image_a"], dict):
+                    img1_id = pair["image_a"]["image_id"]
+                    img2_id = pair["image_b"]["image_id"]
+                    ans1 = pair["image_a"].get("answer") or pair["image_a"].get("consensus_answer", "")
+                    ans2 = pair["image_b"].get("answer") or pair["image_b"].get("consensus_answer", "")
+                else:
+                    img1_id = pair.get("image_id_1") or pair.get("image_id_a")
+                    img2_id = pair.get("image_id_2") or pair.get("image_id_b")
+                    ans1 = pair.get("answer_1") or pair.get("answer_a", "")
+                    ans2 = pair.get("answer_2") or pair.get("answer_b", "")
+
                 pair_id = pair.get("pair_id", f"{suite_name}_{img1_id}_{img2_id}")
                 q_type = pair.get("answer_type", pair.get("pair_type", "unknown"))
 

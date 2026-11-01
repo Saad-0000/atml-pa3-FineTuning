@@ -40,19 +40,26 @@ def generate_fixed_mismatched_mapping(
     """
     rng = np.random.RandomState(seed)
     mapping = {}
-    pair_ids = [p["pair_id"] for p in pairs]
 
     # Collect all image IDs available
     all_images = []
     for p in pairs:
-        all_images.append(p["image_id_1"])
-        all_images.append(p["image_id_2"])
-    all_images = list(dict.fromkeys(all_images))
+        if "image_a" in p and "image_b" in p and isinstance(p["image_a"], dict):
+            all_images.append(p["image_a"]["image_id"])
+            all_images.append(p["image_b"]["image_id"])
+        else:
+            all_images.append(p.get("image_id_1") or p.get("image_id_a"))
+            all_images.append(p.get("image_id_2") or p.get("image_id_b"))
+    all_images = list(dict.fromkeys(img for img in all_images if img is not None))
 
     for p in pairs:
         pid = p["pair_id"]
-        img1 = p["image_id_1"]
-        img2 = p["image_id_2"]
+        if "image_a" in p and "image_b" in p and isinstance(p["image_a"], dict):
+            img1 = p["image_a"]["image_id"]
+            img2 = p["image_b"]["image_id"]
+        else:
+            img1 = p.get("image_id_1") or p.get("image_id_a")
+            img2 = p.get("image_id_2") or p.get("image_id_b")
         # Candidate images: all images not belonging to this pair
         candidates = [img for img in all_images if img != img1 and img != img2]
         if not candidates:
@@ -125,10 +132,17 @@ class FinalEvaluator:
             for pair in pairs:
                 pid = pair["pair_id"]
                 q = pair["question"]
-                img1_id = pair["image_id_1"]
-                img2_id = pair["image_id_2"]
-                ans1 = pair["answer_1"]
-                ans2 = pair["answer_2"]
+                if "image_a" in pair and "image_b" in pair and isinstance(pair["image_a"], dict):
+                    img1_id = pair["image_a"]["image_id"]
+                    img2_id = pair["image_b"]["image_id"]
+                    ans1 = pair["image_a"].get("answer") or pair["image_a"].get("consensus_answer", "")
+                    ans2 = pair["image_b"].get("answer") or pair["image_b"].get("consensus_answer", "")
+                else:
+                    img1_id = pair.get("image_id_1") or pair.get("image_id_a")
+                    img2_id = pair.get("image_id_2") or pair.get("image_id_b")
+                    ans1 = pair.get("answer_1") or pair.get("answer_a", "")
+                    ans2 = pair.get("answer_2") or pair.get("answer_b", "")
+
                 q_type = pair.get("answer_type", pair.get("pair_type", "unknown"))
 
                 # For each question in the pair

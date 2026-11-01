@@ -126,25 +126,33 @@ class StageMixtureSampler:
     def _pair_to_examples(pair: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Converts a complementary pair dict into 2 training example dicts.
+        Supports both nested schema (image_a, image_b) and flat schema (image_id_1, image_id_2).
         """
-        q = pair["question"]
-        pair_id = pair["pair_id"]
+        q = pair.get("question", "")
+        pair_id = pair.get("pair_id", "pair")
         pair_type = pair.get("pair_type", pair.get("answer_type", "vqa"))
 
-        img_a = pair["image_a"]
-        img_b = pair["image_b"]
-
-        ans_a = img_a.get("answer") or img_a.get("consensus_answer", "")
-        ans_b = img_b.get("answer") or img_b.get("consensus_answer", "")
+        if "image_a" in pair and "image_b" in pair and isinstance(pair["image_a"], dict):
+            img_a = pair["image_a"]
+            img_b = pair["image_b"]
+            img_id_a = img_a.get("image_id")
+            img_id_b = img_b.get("image_id")
+            ans_a = img_a.get("answer") or img_a.get("consensus_answer", "")
+            ans_b = img_b.get("answer") or img_b.get("consensus_answer", "")
+        else:
+            img_id_a = pair.get("image_id_1") or pair.get("image_id_a")
+            img_id_b = pair.get("image_id_2") or pair.get("image_id_b")
+            ans_a = pair.get("answer_1") or pair.get("answer_a", "")
+            ans_b = pair.get("answer_2") or pair.get("answer_b", "")
 
         ex_a = {
             "example_id": f"{pair_id}_a",
             "pair_id": pair_id,
             "pair_role": "image_a",
-            "image_id": img_a["image_id"],
+            "image_id": img_id_a,
             "question": q,
-            "answer": ans_a,
-            "target_text": ans_a,
+            "answer": str(ans_a),
+            "target_text": str(ans_a),
             "component": pair_type,
             "is_caption": False,
         }
@@ -152,10 +160,10 @@ class StageMixtureSampler:
             "example_id": f"{pair_id}_b",
             "pair_id": pair_id,
             "pair_role": "image_b",
-            "image_id": img_b["image_id"],
+            "image_id": img_id_b,
             "question": q,
-            "answer": ans_b,
-            "target_text": ans_b,
+            "answer": str(ans_b),
+            "target_text": str(ans_b),
             "component": pair_type,
             "is_caption": False,
         }
