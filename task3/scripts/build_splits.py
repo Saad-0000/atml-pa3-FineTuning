@@ -17,7 +17,7 @@ if str(ROOT_DIR) not in sys.path:
 import pandas as pd
 from task3.src.utils.common import get_logger, atomic_save_json
 from task3.src.data.split_builder import build_dataset_splits, save_splits_manifest
-from task3.src.data.parquet_loader import load_dataset_rollouts
+from task3.src.data.parquet_loader import load_dataset_rollouts, resolve_dataset_dir
 from task3.src.visualization.tables import build_table_t01
 
 logger = get_logger("build_splits")

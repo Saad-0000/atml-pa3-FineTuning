@@ -21,6 +21,7 @@ if str(ROOT_DIR) not in sys.path:
 import pandas as pd
 from task3.src.utils.common import get_logger, atomic_save_json
 from task3.src.data.split_builder import load_splits_manifest
+from task3.src.data.parquet_loader import resolve_dataset_dir
 from task3.src.live_generation.generator import LiveGenerationPipeline
 from task3.src.visualization.tables import build_table_t09, build_table_t10, build_table_t11
 
