@@ -3,7 +3,7 @@
 Usage:
     python -m task2.scripts.train_stage --stage 1 --config task2/configs/task2.yaml
     python -m task2.scripts.train_stage --all --config task2/configs/task2.yaml
-    python -m task2.scripts.train_stage --resume --config task2/configs/task2.yaml
+    python -m task2.scripts.train_stage --all --resume --config task2/configs/task2.yaml
 """
 import argparse
 import json
@@ -24,6 +24,7 @@ from task2.src.training.trainer import VLMTrainer
 from task2.src.utils.logging_utils import setup_logger
 
 logger = setup_logger("train_stage")
+setup_logger("task2")
 
 
 def parse_args():
@@ -77,53 +78,120 @@ class FeatureCacheReader:
         return torch.randn(196, 768, generator=g, dtype=torch.float16)
 
 
+class Stage1BatchGenerator:
+    """Generates microbatches of size 8 for Stage 1 (2 epochs over 18,000 captions = 36,000 examples)."""
+
+    def __init__(
+        self,
+        captions: List[Dict[str, Any]],
+        feature_cache: FeatureCacheReader,
+        microbatch_size: int = 8,
+        epochs: int = 2,
+        seed: int = 6304,
+    ):
+        self.captions = captions
+        self.feature_cache = feature_cache
+        self.microbatch_size = microbatch_size
+        self.epochs = epochs
+        self.seed = seed
+        self._gen = self._create_generator()
+
+    def _create_generator(self):
+        import random
+        rng = random.Random(self.seed)
+
+        for epoch in range(self.epochs):
+            shuffled = list(self.captions)
+            rng.shuffle(shuffled)
+            for i in range(0, len(shuffled), self.microbatch_size):
+                chunk = shuffled[i : i + self.microbatch_size]
+                batch = []
+                for item in chunk:
+                    batch.append({
+                        "visual_features": self.feature_cache.get(item["image_id"]),
+                        "question": "",
+                        "answer": item["caption"],
+                        "is_caption": True,
+                    })
+                yield batch
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> List[Dict[str, Any]]:
+        return next(self._gen)
+
+    def get_state(self) -> Dict[str, Any]:
+        return {}
+
+
 def create_stage1_batch_generator(
     captions: List[Dict[str, Any]],
     feature_cache: FeatureCacheReader,
     microbatch_size: int = 8,
     epochs: int = 2,
     seed: int = 6304,
-) -> Iterator[List[Dict[str, Any]]]:
-    """Generates microbatches of size 8 for Stage 1 (2 epochs over 18,000 captions = 36,000 examples)."""
-    import random
-    rng = random.Random(seed)
+) -> Stage1BatchGenerator:
+    return Stage1BatchGenerator(
+        captions=captions,
+        feature_cache=feature_cache,
+        microbatch_size=microbatch_size,
+        epochs=epochs,
+        seed=seed,
+    )
 
-    for epoch in range(epochs):
-        shuffled = list(captions)
-        rng.shuffle(shuffled)
-        for i in range(0, len(shuffled), microbatch_size):
-            chunk = shuffled[i : i + microbatch_size]
-            batch = []
-            for item in chunk:
+
+class SamplerBatchGenerator:
+    """Iterator class yielding microbatches from a mixture sampler and exposing sampler state."""
+
+    def __init__(
+        self,
+        sampler: Any,
+        feature_cache: FeatureCacheReader,
+        microbatch_size: int = 8,
+    ):
+        self.sampler = sampler
+        self.feature_cache = feature_cache
+        self.microbatch_size = microbatch_size
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> List[Dict[str, Any]]:
+        batch = []
+        num_draws = max(1, self.microbatch_size // 2)
+        for _ in range(num_draws):
+            draw_items = (
+                self.sampler.sample_draw()
+                if hasattr(self.sampler, "sample_draw")
+                else self.sampler.draw_pair_or_two_examples()
+            )
+            for item in draw_items:
                 batch.append({
-                    "visual_features": feature_cache.get(item["image_id"]),
-                    "question": "",
-                    "answer": item["caption"],
-                    "is_caption": True,
+                    "visual_features": self.feature_cache.get(item.get("image_id")),
+                    "question": item.get("question", ""),
+                    "answer": item.get("answer") or item.get("target_text") or item.get("caption", ""),
+                    "is_caption": item.get("is_caption", item.get("component") == "coco_captions"),
                 })
-            yield batch
+        return batch
+
+    def get_state(self) -> Dict[str, Any]:
+        if hasattr(self.sampler, "get_state"):
+            return self.sampler.get_state()
+        return {}
 
 
 def create_sampler_batch_generator(
     sampler: Any,
     feature_cache: FeatureCacheReader,
     microbatch_size: int = 8,
-) -> Iterator[List[Dict[str, Any]]]:
-    """Generates microbatches of size 8 from a mixture sampler (each draw provides 2 examples)."""
-    while True:
-        batch = []
-        # Need microbatch_size / 2 draws per microbatch (e.g. 4 draws = 8 examples)
-        num_draws = max(1, microbatch_size // 2)
-        for _ in range(num_draws):
-            draw_items = sampler.sample_draw() if hasattr(sampler, "sample_draw") else sampler.draw_pair_or_two_examples()
-            for item in draw_items:
-                batch.append({
-                    "visual_features": feature_cache.get(item.get("image_id")),
-                    "question": item.get("question", ""),
-                    "answer": item.get("answer") or item.get("target_text") or item.get("caption", ""),
-                    "is_caption": item.get("is_caption", item.get("component") == "coco_captions"),
-                })
-        yield batch
+) -> SamplerBatchGenerator:
+    """Returns a batch generator instance for a mixture sampler."""
+    return SamplerBatchGenerator(
+        sampler=sampler,
+        feature_cache=feature_cache,
+        microbatch_size=microbatch_size,
+    )
 
 
 def main():
@@ -181,23 +249,43 @@ def main():
 
     # Resume handling
     resume_payload = None
-    if args.resume or args.checkpoint:
-        if args.checkpoint:
-            ckpt_path = Path(args.checkpoint)
-            resume_payload = torch.load(ckpt_path, map_location=device, weights_only=False)
-        else:
-            loaded = ckpt_manager.load_latest_checkpoint(device=device)
-            if loaded:
-                ckpt_path, resume_payload = loaded
-                logger.info(f"Loaded checkpoint for resumption: {ckpt_path}")
+    latest_loaded = ckpt_manager.load_latest_checkpoint(device=device)
 
-        if resume_payload:
-            vlm.connector.load_state_dict(resume_payload["connector_state"])
-            if resume_payload.get("lora_state") and vlm.lora_enabled:
-                vlm.load_lora_state_dict(resume_payload["lora_state"])
+    if args.checkpoint:
+        ckpt_path = Path(args.checkpoint)
+        resume_payload = torch.load(ckpt_path, map_location=device, weights_only=False)
+        logger.info(f"Loaded specified checkpoint: {ckpt_path}")
+    elif args.resume or (latest_loaded is not None and (args.all or args.stage == "all")):
+        if latest_loaded:
+            ckpt_path, resume_payload = latest_loaded
+            logger.info(f"Loaded checkpoint for resumption: {ckpt_path}")
+
+    if resume_payload:
+        vlm.connector.load_state_dict(resume_payload["connector_state"])
+        if resume_payload.get("lora_state"):
+            vlm.load_lora_state_dict(resume_payload["lora_state"])
+        trainer.global_update = resume_payload.get("global_update", 0)
+        trainer.examples_presented = resume_payload.get("examples_presented", 0)
+        logger.info(
+            f"Restored model weights from checkpoint. Trainer at global_update={trainer.global_update}, "
+            f"examples_presented={trainer.examples_presented}"
+        )
 
     # Determine stages to run
-    stages_to_run = [1, 2, 3] if (args.all or args.stage == "all") else [int(args.stage)]
+    all_stages = [1, 2, 3] if (args.all or args.stage == "all") else [int(args.stage)]
+    stages_to_run = []
+
+    for stage in all_stages:
+        stage_cfg = config.stages.get(stage)
+        target_updates = stage_cfg.updates
+        # If we have a checkpoint and this stage is completely finished, skip it
+        if resume_payload and resume_payload.get("stage", 0) >= stage:
+            if resume_payload.get("stage") > stage or (
+                resume_payload.get("stage") == stage and resume_payload.get("stage_update", 0) >= target_updates
+            ):
+                logger.info(f"Stage {stage} ({stage_cfg.name}) is already completed ({target_updates}/{target_updates} updates). Skipping.")
+                continue
+        stages_to_run.append(stage)
 
     for stage in stages_to_run:
         logger.info(f"Preparing batch generator for Stage {stage}...")
@@ -221,7 +309,6 @@ def main():
                 feature_cache=feature_cache,
                 microbatch_size=config.training.microbatch_size,
             )
-            batch_gen.get_state = s2_sampler.get_state
         elif stage == 3:
             s3_sampler = Stage3MixtureSampler(
                 vqav2_pool=vqav2_splits["train_pairs"],
@@ -235,7 +322,6 @@ def main():
                 feature_cache=feature_cache,
                 microbatch_size=config.training.microbatch_size,
             )
-            batch_gen.get_state = s3_sampler.get_state
 
         trainer.train_stage(
             stage=stage,

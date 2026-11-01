@@ -196,6 +196,10 @@ class VLMTrainer:
         self.vlm.train()
         optimizer.zero_grad()
 
+        if stage_update >= total_stage_updates:
+            logger.info(f"Stage {stage} already reached target updates ({stage_update}/{total_stage_updates}). Skipping.")
+            return
+
         accum_step = 0
         running_loss = 0.0
         start_step_time = time.time()
