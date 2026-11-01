@@ -1,0 +1,10 @@
+dataset,signal_name,mean_top_quartile_acc,mean_bottom_quartile_acc,mean_top_minus_bottom_diff,valid_questions
+MATH,length,0.390625,0.390625,0.0,8
+MATH,L_i,0.375,0.484375,-0.109375,8
+MATH,K_i,0.390625,0.390625,0.0,8
+MATH,shortest_rollout_control,0.625,0.0,0.625,8
+MathVista,length,0.5,0.390625,0.109375,8
+MathVista,L_i,0.484375,0.53125,-0.046875,8
+MathVista,K_i,0.4375,0.46875,-0.03125,8
+MathVista,V_i,0.46875,0.453125,0.015625,8
+MathVista,shortest_rollout_control,0.375,0.0,0.375,8

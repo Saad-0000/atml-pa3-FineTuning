@@ -1,0 +1,5 @@
+dataset,budget_n,method,accuracy,mean_diff,mean_covariance,identity_residual
+MathVista,32,Trajectory-level Highest (Z),0.582,-0.002,-0.002,1.2e-08
+MathVista,32,Tokenwise Highest (Z_token),0.58,-0.002,-0.002,1.2e-08
+MathVista,32,Trajectory-level RWC (Z),0.605,-0.002,-0.002,1.2e-08
+MathVista,32,Tokenwise RWC (Z_token),0.604,-0.002,-0.002,1.2e-08

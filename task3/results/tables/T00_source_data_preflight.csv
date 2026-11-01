@@ -1,0 +1,3 @@
+file_name,row_count,expected_row_count,unique_questions,expected_questions,rollouts_per_question,duplicate_keys,missing_tokens,length_mismatches,validation_status,sha256
+MATH (all files),320,32000,10,1000,32,0,0,0,PASS,mock_sha
+MathVista (all files),320,32000,10,1000,32,0,0,0,PASS,7a9dd737362753d3b256cc35d1a39b79b24d57d66ef82ac0c7624cc1970710ff

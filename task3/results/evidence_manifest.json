@@ -1,0 +1,191 @@
+{
+  "overall_status": "COMPLETE",
+  "tables": {
+    "T00": {
+      "present": true,
+      "path": "T00_source_data_preflight.csv",
+      "rows": 2
+    },
+    "T01": {
+      "present": true,
+      "path": "T01_split_manifest_summary.csv",
+      "rows": 2
+    },
+    "T02": {
+      "present": true,
+      "path": "T02_scorer_normalization_audit.csv",
+      "rows": 2
+    },
+    "T03": {
+      "present": true,
+      "path": "T03_firstans_oracle_diversity.csv",
+      "rows": 12
+    },
+    "T04": {
+      "present": true,
+      "path": "T04_offline_method_comparison.csv",
+      "rows": 84
+    },
+    "T05": {
+      "present": true,
+      "path": "T05_paired_accuracy_differences.csv",
+      "rows": 8
+    },
+    "T06": {
+      "present": true,
+      "path": "T06_signal_length_correctness.csv",
+      "rows": 9
+    },
+    "T07": {
+      "present": true,
+      "path": "T07_confidence_vision_relationship.csv",
+      "rows": 1
+    },
+    "T08": {
+      "present": true,
+      "path": "T08_fusion_comparison.csv",
+      "rows": 4
+    },
+    "T09": {
+      "present": true,
+      "path": "T09_live_question_results.csv",
+      "rows": 24
+    },
+    "T10": {
+      "present": true,
+      "path": "T10_live_strategy_summary.csv",
+      "rows": 3
+    },
+    "T11": {
+      "present": true,
+      "path": "T11_refinement_transition_matrix.csv",
+      "rows": 4
+    },
+    "T12": {
+      "present": true,
+      "path": "T12_adaptive_dev_grid.csv",
+      "rows": 52
+    },
+    "T13": {
+      "present": true,
+      "path": "T13_adaptive_heldout_results.csv",
+      "rows": 4
+    },
+    "T14": {
+      "present": true,
+      "path": "T14_premature_stop_recovery.csv",
+      "rows": 12
+    },
+    "T15": {
+      "present": true,
+      "path": "T15_qualitative_case_index.csv",
+      "rows": 4
+    },
+    "T16": {
+      "present": true,
+      "path": "T16_resource_run_inventory.csv",
+      "rows": 9
+    },
+    "T17": {
+      "present": true,
+      "path": "T17_evidence_completeness_audit.csv",
+      "rows": 34
+    }
+  },
+  "plots": {
+    "P01": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P01_math_accuracy_oracle.png"
+    },
+    "P02": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P02_mathvista_accuracy_oracle.png"
+    },
+    "P03": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P03_answer_diversity.png"
+    },
+    "P04": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P04_failure_decomposition.png"
+    },
+    "P05": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P05_math_cost_tradeoff.png"
+    },
+    "P06": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P06_mathvista_cost_tradeoff.png"
+    },
+    "P07": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P07_quartile_analysis.png"
+    },
+    "P08": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P08_confidence_vision.png"
+    },
+    "P09": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P09_fusion_comparison.png"
+    },
+    "P10": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P10_live_accuracy_tokens.png"
+    },
+    "P11": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P11_live_runtime_breakdown.png"
+    },
+    "P12": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P12_refinement_transitions.png"
+    },
+    "P13": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P13_adaptive_dev_grid.png"
+    },
+    "P14": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P14_adaptive_heldout_comparison.png"
+    },
+    "P15": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P15_stopping_distributions.png"
+    },
+    "P16": {
+      "png_present": true,
+      "pdf_present": true,
+      "path": "P16_premature_stops.png"
+    }
+  },
+  "manifests": {
+    "math_splits": true,
+    "mathvista_splits": true,
+    "adaptive_selected_policies": true
+  },
+  "qualitative": {
+    "qualitative_cases_json": true
+  },
+  "isolation": {
+    "task1_present": true,
+    "task2_present": true,
+    "task1_task2_changes": [],
+    "isolation_preserved": true
+  }
+}

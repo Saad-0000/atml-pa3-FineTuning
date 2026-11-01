@@ -1,0 +1,2 @@
+dataset,mean_rollout_correlation,median_rollout_correlation,valid_rollouts,zero_variance_rollouts,total_rollouts
+MathVista,0.145,0.13,256,256,256

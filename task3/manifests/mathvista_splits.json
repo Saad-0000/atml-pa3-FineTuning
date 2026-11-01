@@ -1,0 +1,32 @@
+{
+  "dataset_name": "MathVista",
+  "seed": 6304,
+  "total_questions": 10,
+  "dev_question_ids": [
+    "mathvista_0005",
+    "mathvista_0009"
+  ],
+  "held_out_question_ids": [
+    "mathvista_0002",
+    "mathvista_0001",
+    "mathvista_0008",
+    "mathvista_0003",
+    "mathvista_0000",
+    "mathvista_0006",
+    "mathvista_0007",
+    "mathvista_0004"
+  ],
+  "live_50_question_ids": [],
+  "sorted_original_ids": [
+    "mathvista_0000",
+    "mathvista_0001",
+    "mathvista_0002",
+    "mathvista_0003",
+    "mathvista_0004",
+    "mathvista_0005",
+    "mathvista_0006",
+    "mathvista_0007",
+    "mathvista_0008",
+    "mathvista_0009"
+  ]
+}

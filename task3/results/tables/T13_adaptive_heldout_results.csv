@@ -1,0 +1,5 @@
+dataset,policy_family,accuracy,mean_token_cost,mean_rollouts_consumed,frac_stopped_at_4,frac_stopped_at_8,frac_stopped_at_16,frac_stopped_at_32,premature_stops,recovered_by_f32
+MATH,agreement,1.0,948.2375,23.5,0.2,0.1125,0.0125,0.675,"{4: 0, 8: 0, 16: 0}","{4: 0, 8: 0, 16: 0}"
+MATH,quality_aware,1.0,948.2375,23.5,0.2,0.1125,0.0125,0.675,"{4: 0, 8: 0, 16: 0}","{4: 0, 8: 0, 16: 0}"
+MathVista,agreement,1.0,910.2375000000001,23.05,0.2125,0.1,0.0375,0.65,"{4: 0, 8: 0, 16: 0}","{4: 0, 8: 0, 16: 0}"
+MathVista,quality_aware,1.0,913.6375,23.150000000000002,0.1875,0.125,0.0375,0.65,"{4: 0, 8: 0, 16: 0}","{4: 0, 8: 0, 16: 0}"

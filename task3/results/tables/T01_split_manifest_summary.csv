@@ -1,0 +1,3 @@
+dataset,total_questions,dev_questions,held_out_questions,live_math_questions,seed,disjoint
+MATH,10,2,8,8,6304,True
+MathVista,10,2,8,0,6304,True

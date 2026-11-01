@@ -1,0 +1,52 @@
+# Task 3 Offline Analysis Configuration
+seed: 6304
+
+paths:
+  data_dir: "task3/data_raw"
+  drive_root: "/content/drive/MyDrive/ATML_PA3/task3"
+  results_dir: "task3/results"
+  manifests_dir: "task3/manifests"
+  artifacts_dir: "task3/artifacts"
+  logs_dir: "task3/logs"
+
+datasets:
+  math:
+    name: "MATH"
+    model_id: "Qwen/Qwen2.5-3B-Instruct"
+    model_type: "llm"
+    total_questions: 1000
+    rollouts_per_question: 32
+    dev_count: 200
+    test_count: 800
+    live_eval_count: 50
+    methods:
+      - "first_ans"
+      - "self_consistency"
+      - "highest_logp"
+      - "highest_self_certainty"
+      - "self_certainty_rwc"
+
+  mathvista:
+    name: "MathVista"
+    model_id: "Qwen/Qwen2.5-VL-3B-Instruct"
+    model_type: "vlm"
+    total_questions: 1000
+    rollouts_per_question: 32
+    dev_count: 200
+    test_count: 800
+    methods:
+      - "first_ans"
+      - "self_consistency"
+      - "highest_logp"
+      - "highest_self_certainty"
+      - "self_certainty_rwc"
+      - "vision_only"
+      - "vision_only_rwc"
+      - "visconf"
+      - "visconf_rwc"
+
+sampling:
+  candidate_budgets: [1, 2, 4, 8, 16, 32]
+  num_permutations: 10
+  bootstrap_resamples: 1000
+  bootstrap_ci: 0.95

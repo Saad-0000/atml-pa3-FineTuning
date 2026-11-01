@@ -66,3 +66,6 @@ token.txt
 .hf_token
 credentials.json
 
+# Local data cache
+/data/
+

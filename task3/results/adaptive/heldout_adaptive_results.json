@@ -1,0 +1,186 @@
+{
+  "t13": [
+    {
+      "dataset": "MATH",
+      "policy_family": "agreement",
+      "accuracy": 1.0,
+      "mean_token_cost": 948.2375,
+      "mean_rollouts_consumed": 23.5,
+      "frac_stopped_at_4": 0.2,
+      "frac_stopped_at_8": 0.1125,
+      "frac_stopped_at_16": 0.0125,
+      "frac_stopped_at_32": 0.675,
+      "premature_stops": {
+        "4": 0,
+        "8": 0,
+        "16": 0
+      },
+      "recovered_by_f32": {
+        "4": 0,
+        "8": 0,
+        "16": 0
+      }
+    },
+    {
+      "dataset": "MATH",
+      "policy_family": "quality_aware",
+      "accuracy": 1.0,
+      "mean_token_cost": 948.2375,
+      "mean_rollouts_consumed": 23.5,
+      "frac_stopped_at_4": 0.2,
+      "frac_stopped_at_8": 0.1125,
+      "frac_stopped_at_16": 0.0125,
+      "frac_stopped_at_32": 0.675,
+      "premature_stops": {
+        "4": 0,
+        "8": 0,
+        "16": 0
+      },
+      "recovered_by_f32": {
+        "4": 0,
+        "8": 0,
+        "16": 0
+      }
+    },
+    {
+      "dataset": "MathVista",
+      "policy_family": "agreement",
+      "accuracy": 1.0,
+      "mean_token_cost": 910.2375000000001,
+      "mean_rollouts_consumed": 23.05,
+      "frac_stopped_at_4": 0.2125,
+      "frac_stopped_at_8": 0.1,
+      "frac_stopped_at_16": 0.0375,
+      "frac_stopped_at_32": 0.65,
+      "premature_stops": {
+        "4": 0,
+        "8": 0,
+        "16": 0
+      },
+      "recovered_by_f32": {
+        "4": 0,
+        "8": 0,
+        "16": 0
+      }
+    },
+    {
+      "dataset": "MathVista",
+      "policy_family": "quality_aware",
+      "accuracy": 1.0,
+      "mean_token_cost": 913.6375,
+      "mean_rollouts_consumed": 23.150000000000002,
+      "frac_stopped_at_4": 0.1875,
+      "frac_stopped_at_8": 0.125,
+      "frac_stopped_at_16": 0.0375,
+      "frac_stopped_at_32": 0.65,
+      "premature_stops": {
+        "4": 0,
+        "8": 0,
+        "16": 0
+      },
+      "recovered_by_f32": {
+        "4": 0,
+        "8": 0,
+        "16": 0
+      }
+    }
+  ],
+  "t14": [
+    {
+      "dataset": "MATH",
+      "policy_family": "agreement",
+      "stop_stage": 4,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MATH",
+      "policy_family": "agreement",
+      "stop_stage": 8,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MATH",
+      "policy_family": "agreement",
+      "stop_stage": 16,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MATH",
+      "policy_family": "quality_aware",
+      "stop_stage": 4,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MATH",
+      "policy_family": "quality_aware",
+      "stop_stage": 8,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MATH",
+      "policy_family": "quality_aware",
+      "stop_stage": 16,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MathVista",
+      "policy_family": "agreement",
+      "stop_stage": 4,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MathVista",
+      "policy_family": "agreement",
+      "stop_stage": 8,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MathVista",
+      "policy_family": "agreement",
+      "stop_stage": 16,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MathVista",
+      "policy_family": "quality_aware",
+      "stop_stage": 4,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MathVista",
+      "policy_family": "quality_aware",
+      "stop_stage": 8,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    },
+    {
+      "dataset": "MathVista",
+      "policy_family": "quality_aware",
+      "stop_stage": 16,
+      "premature_stop_count": 0,
+      "recovered_by_f32_count": 0,
+      "recovery_rate": 0.0
+    }
+  ]
+}

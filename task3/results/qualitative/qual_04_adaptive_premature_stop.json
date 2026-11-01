@@ -1,0 +1,9 @@
+{
+  "case_id": "QUAL_04_ADAPTIVE_PREMATURE_STOP",
+  "category": "adaptive_stopping",
+  "dataset": "MATH",
+  "question_id": "math_heldout_0088",
+  "rule": "First question where agreement policy stopped early at n=4 on incorrect majority, but fixed-32 SC recovered correct answer",
+  "description": "First 4 rollouts had 3 matching spurious answers (tau=0.75 stop satisfied); remaining rollouts revealed true consensus, which fixed-32 SC would have identified.",
+  "artifact_path": "task3/results/qualitative/qual_04_adaptive_premature_stop.json"
+}

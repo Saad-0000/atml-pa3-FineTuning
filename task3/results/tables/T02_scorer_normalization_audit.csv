@@ -1,0 +1,3 @@
+dataset,scorer_package,normalization_rule,total_rollouts,no_answer_count,parse_failures,correct_rollouts,raw_accuracy
+MATH,sympy/regex_fallback,math_verify latex parse + sympy equivalence,320,17,0,141,44.06
+MathVista,MathVista precision & option normalizer,option letter / float precision tolerance,320,16,0,145,45.31

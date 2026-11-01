@@ -1,0 +1,9 @@
+dataset,budget_n,comparison,method_a,method_b,mean_diff,ci_lower,ci_upper,p_value
+MATH,32,SC vs FirstAns (N=32),self_consistency,first_ans,0.55,0.42500000000000004,0.6875,0.0
+MATH,32,K+RWC vs SC (N=32),rwc_self_certainty,self_consistency,0.0,0.0,0.0,0.0
+MATH,32,Highest K vs FirstAns (N=32),highest_self_certainty,first_ans,0.175,-0.1875,0.5125,0.0
+MathVista,32,SC vs FirstAns (N=32),self_consistency,first_ans,0.6,0.4625,0.7125,0.0
+MathVista,32,K+RWC vs SC (N=32),rwc_self_certainty,self_consistency,0.0,0.0,0.0,0.0
+MathVista,32,Highest K vs FirstAns (N=32),highest_self_certainty,first_ans,0.22499999999999998,-0.19999999999999996,0.5753124999999997,0.0
+MathVista,32,VisConf RWC vs SC (N=32),rwc_visconf,self_consistency,0.0,0.0,0.0,0.0
+MathVista,32,VisConf vs Vision-only (N=32),highest_visconf,highest_vision_only,-0.375,-0.875,0.125,0.0

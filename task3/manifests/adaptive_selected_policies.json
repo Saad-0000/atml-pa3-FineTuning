@@ -1,0 +1,26 @@
+{
+  "MATH": {
+    "agreement": {
+      "tau": 0.625
+    },
+    "quality_aware": {
+      "tau": 0.625,
+      "gamma": 0.0
+    }
+  },
+  "MathVista": {
+    "agreement": {
+      "tau": 0.625
+    },
+    "quality_aware": {
+      "tau": 0.625,
+      "gamma": 0.0
+    }
+  },
+  "selection_metadata": {
+    "dev_questions_math": 2,
+    "dev_questions_mathvista": 2,
+    "feasibility_margin": -0.01,
+    "seed": 6304
+  }
+}

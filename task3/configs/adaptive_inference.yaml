@@ -1,0 +1,23 @@
+# Task 3 Adaptive Sampling Configuration
+seed: 6304
+
+paths:
+  drive_root: "/content/drive/MyDrive/ATML_PA3/task3"
+  results_dir: "task3/results/adaptive"
+  logs_dir: "task3/logs"
+
+stopping_schedule:
+  check_points: [4, 8, 16]
+  max_candidates: 32
+  final_selector: "self_consistency"
+
+grid_search:
+  tau_grid: [0.5, 0.625, 0.75, 0.875, 1.0]
+  gamma_grid: [0.0, 0.1, 0.25, 0.5]
+  selection_constraint_pp: 1.0  # Accuracy within 1 pp of fixed-32 SC
+
+datasets:
+  math:
+    quality_score: "self_certainty"
+  mathvista:
+    quality_score: "visconf"

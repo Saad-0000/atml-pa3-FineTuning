@@ -1,0 +1,9 @@
+{
+  "case_id": "QUAL_01_SELECTION_DISAGREEMENT",
+  "category": "offline_selection",
+  "dataset": "MATH",
+  "question_id": "math_0042",
+  "rule": "Lexicographically first question where SC and Highest-K disagree at N=8",
+  "description": "FirstAns picks candidate 0 (incorrect), SC selects majority group '4' (correct), Highest-K selects candidate with high confidence in '2' (incorrect).",
+  "artifact_path": "task3/results/qualitative/qual_01_selection_disagreement.json"
+}

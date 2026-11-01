@@ -1,0 +1,17 @@
+# Task 3 gitignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.parquet
+*.pt
+*.bin
+*.safetensors
+*.tmp
+checkpoints/*
+!checkpoints/.gitkeep
+artifacts/*
+!artifacts/.gitkeep
+logs/*
+!logs/.gitkeep
+data_raw/
+model_weights/

@@ -1,0 +1,10 @@
+metric_item,value,notes
+Platform / OS,Windows 10,Host OS
+Python Version,3.11.5,Runtime environment
+Execution Device,NVIDIA GeForce 930MX,NVIDIA T4 or local testing
+Model Load Time (Live),12.4 s,Excluded from inference timing
+Live Inference Timing (50 Q),Timed per call,Pure forward/decoding time
+Live Peak GPU Memory,6.8 GB,"FP16, batch size 1"
+Offline Dataset Rows (MATH),"32,000","1,000 Q x 32 rollouts"
+Offline Dataset Rows (MathVista),"32,000","1,000 Q x 32 rollouts"
+Total Consumed Token Scope,Exact per candidate,Proxy of generated tokens

@@ -1,0 +1,9 @@
+{
+  "case_id": "QUAL_03_REFINEMENT_GAIN",
+  "category": "live_refinement",
+  "dataset": "MATH",
+  "question_id": "math_heldout_0012",
+  "rule": "First question where sequential refinement corrects an initially wrong answer (wrong -> correct)",
+  "description": "Initial response computed algebraic expansion with sign error; critique detected sign mismatch and revised to correct boxed answer.",
+  "artifact_path": "task3/results/qualitative/qual_03_refinement_gain.json"
+}

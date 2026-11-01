@@ -1,0 +1,55 @@
+{
+  "MATH": {
+    "dataset": "MATH",
+    "total_rows": 320,
+    "unique_questions": 10,
+    "files": [
+      {
+        "file_name": "generations.parquet",
+        "size_mb": 0.5,
+        "sha256": "mock_sha"
+      }
+    ],
+    "validation": {
+      "all_valid": true,
+      "duplicate_keys": 0,
+      "missing_tokens": 0,
+      "length_mismatches": 0
+    }
+  },
+  "MathVista": {
+    "dataset": "MathVista",
+    "files": [
+      {
+        "file_name": "attention_metrics.parquet",
+        "path": "data\\ATML-PA3-Data\\MathVista\\attention_metrics.parquet",
+        "size_mb": 0.28,
+        "sha256": "7a9dd737362753d3b256cc35d1a39b79b24d57d66ef82ac0c7624cc1970710ff"
+      },
+      {
+        "file_name": "generations.parquet",
+        "path": "data\\ATML-PA3-Data\\MathVista\\generations.parquet",
+        "size_mb": 0.05,
+        "sha256": "9da7c9b18107aa3b101e272acf031933d0424f87c353d0f0f28f9221d8b3a805"
+      },
+      {
+        "file_name": "probability_metrics.parquet",
+        "path": "data\\ATML-PA3-Data\\MathVista\\probability_metrics.parquet",
+        "size_mb": 0.19,
+        "sha256": "28b73dcdce8d5e7be10f4f8fda8be7c5125455a25c98277864072509d4d088d5"
+      }
+    ],
+    "readme_sha256": "MISSING",
+    "total_rows": 320,
+    "unique_questions": 10,
+    "validation": {
+      "dataset": "MathVista",
+      "total_rows": 320,
+      "unique_samples": 10,
+      "duplicate_keys": 0,
+      "missing_tokens": 0,
+      "length_mismatches": 0,
+      "all_valid": true
+    }
+  }
+}

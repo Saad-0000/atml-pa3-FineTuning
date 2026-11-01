@@ -1,0 +1,43 @@
+# Task 3 Live Generation Configuration
+seed: 6304
+
+paths:
+  drive_root: "/content/drive/MyDrive/ATML_PA3/task3"
+  results_dir: "task3/results/live_generation"
+  artifacts_dir: "task3/artifacts"
+  logs_dir: "task3/logs"
+
+model:
+  model_id: "Qwen/Qwen2.5-3B-Instruct"
+  revision: "main"
+  torch_dtype: "float16"
+  device: "cuda"
+  quantization: false
+  batch_size: 1
+
+generation:
+  temperature: 0.7
+  top_p: 0.8
+  top_k: 20
+  repetition_penalty: 1.0
+  total_output_allowance: 3072
+
+prompting:
+  system_prompt: "You are a helpful assistant."
+  question_suffix: "\n\nThink step by step inside <think> </think> tags, then give your final answer inside \\boxed{}."
+  refinement_instruction: "Review the solution above. Identify and correct any errors; if it is correct, retain its answer. Give your final answer inside \\boxed{}."
+
+strategies:
+  single_longer:
+    max_new_tokens: 3072
+  parallel:
+    num_samples: 3
+    max_new_tokens: 1024
+  sequential_refinement:
+    initial_max_tokens: 1024
+    revision_max_tokens: 2048
+
+dataset:
+  source_dataset: "MATH"
+  eval_question_count: 50
+  selection_rule: "first_50_held_out_permutation"

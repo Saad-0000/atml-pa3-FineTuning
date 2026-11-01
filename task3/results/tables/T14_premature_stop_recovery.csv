@@ -1,0 +1,13 @@
+dataset,policy_family,stop_stage,premature_stop_count,recovered_by_f32_count,recovery_rate
+MATH,agreement,4,0,0,0.0
+MATH,agreement,8,0,0,0.0
+MATH,agreement,16,0,0,0.0
+MATH,quality_aware,4,0,0,0.0
+MATH,quality_aware,8,0,0,0.0
+MATH,quality_aware,16,0,0,0.0
+MathVista,agreement,4,0,0,0.0
+MathVista,agreement,8,0,0,0.0
+MathVista,agreement,16,0,0,0.0
+MathVista,quality_aware,4,0,0,0.0
+MathVista,quality_aware,8,0,0,0.0
+MathVista,quality_aware,16,0,0,0.0

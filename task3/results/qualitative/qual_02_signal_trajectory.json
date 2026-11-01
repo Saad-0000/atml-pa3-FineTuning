@@ -1,0 +1,9 @@
+{
+  "case_id": "QUAL_02_SIGNAL_TRAJECTORY",
+  "category": "signal_trajectory",
+  "dataset": "MathVista",
+  "question_id": "mathvista_0105",
+  "rule": "Lexicographically first question with high visual engagement V_i > 0.4 and low self-certainty K_i",
+  "description": "Visual engagement remains elevated throughout reasoning steps, whereas self-certainty drops during spatial coordinate extraction.",
+  "artifact_path": "task3/results/qualitative/qual_02_signal_trajectory.json"
+}

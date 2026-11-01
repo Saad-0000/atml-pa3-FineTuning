@@ -1,0 +1,35 @@
+item_id,item_type,file_path,row_or_series_count,status,notes
+T00,Table,T00_source_data_preflight.csv,2,COMPLETE,Generated successfully
+T01,Table,T01_split_manifest_summary.csv,2,COMPLETE,Generated successfully
+T02,Table,T02_scorer_normalization_audit.csv,2,COMPLETE,Generated successfully
+T03,Table,T03_firstans_oracle_diversity.csv,12,COMPLETE,Generated successfully
+T04,Table,T04_offline_method_comparison.csv,84,COMPLETE,Generated successfully
+T05,Table,T05_paired_accuracy_differences.csv,8,COMPLETE,Generated successfully
+T06,Table,T06_signal_length_correctness.csv,9,COMPLETE,Generated successfully
+T07,Table,T07_confidence_vision_relationship.csv,1,COMPLETE,Generated successfully
+T08,Table,T08_fusion_comparison.csv,4,COMPLETE,Generated successfully
+T09,Table,T09_live_question_results.csv,24,COMPLETE,Generated successfully
+T10,Table,T10_live_strategy_summary.csv,3,COMPLETE,Generated successfully
+T11,Table,T11_refinement_transition_matrix.csv,4,COMPLETE,Generated successfully
+T12,Table,T12_adaptive_dev_grid.csv,52,COMPLETE,Generated successfully
+T13,Table,T13_adaptive_heldout_results.csv,4,COMPLETE,Generated successfully
+T14,Table,T14_premature_stop_recovery.csv,12,COMPLETE,Generated successfully
+T15,Table,T15_qualitative_case_index.csv,4,COMPLETE,Generated successfully
+T16,Table,T16_resource_run_inventory.csv,9,COMPLETE,Generated successfully
+T17,Table,T17_evidence_completeness_audit.csv,34,COMPLETE,Generated successfully
+P01,Plot,P01_math_accuracy_oracle.png,1,COMPLETE,PNG/PDF figure generated
+P02,Plot,P02_mathvista_accuracy_oracle.png,1,COMPLETE,PNG/PDF figure generated
+P03,Plot,P03_answer_diversity.png,1,COMPLETE,PNG/PDF figure generated
+P04,Plot,P04_failure_decomposition.png,1,COMPLETE,PNG/PDF figure generated
+P05,Plot,P05_math_cost_tradeoff.png,1,COMPLETE,PNG/PDF figure generated
+P06,Plot,P06_mathvista_cost_tradeoff.png,1,COMPLETE,PNG/PDF figure generated
+P07,Plot,P07_quartile_analysis.png,1,COMPLETE,PNG/PDF figure generated
+P08,Plot,P08_confidence_vision.png,1,COMPLETE,PNG/PDF figure generated
+P09,Plot,P09_fusion_comparison.png,1,COMPLETE,PNG/PDF figure generated
+P10,Plot,P10_live_accuracy_tokens.png,1,COMPLETE,PNG/PDF figure generated
+P11,Plot,P11_live_runtime_breakdown.png,1,COMPLETE,PNG/PDF figure generated
+P12,Plot,P12_refinement_transitions.png,1,COMPLETE,PNG/PDF figure generated
+P13,Plot,P13_adaptive_dev_grid.png,1,COMPLETE,PNG/PDF figure generated
+P14,Plot,P14_adaptive_heldout_comparison.png,1,COMPLETE,PNG/PDF figure generated
+P15,Plot,P15_stopping_distributions.png,1,COMPLETE,PNG/PDF figure generated
+P16,Plot,P16_premature_stops.png,1,COMPLETE,PNG/PDF figure generated

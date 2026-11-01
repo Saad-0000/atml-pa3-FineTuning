@@ -1,0 +1,41 @@
+{
+  "dataset_name": "MATH",
+  "seed": 6304,
+  "total_questions": 10,
+  "dev_question_ids": [
+    "math_0005",
+    "math_0009"
+  ],
+  "held_out_question_ids": [
+    "math_0002",
+    "math_0001",
+    "math_0008",
+    "math_0003",
+    "math_0000",
+    "math_0006",
+    "math_0007",
+    "math_0004"
+  ],
+  "live_50_question_ids": [
+    "math_0002",
+    "math_0001",
+    "math_0008",
+    "math_0003",
+    "math_0000",
+    "math_0006",
+    "math_0007",
+    "math_0004"
+  ],
+  "sorted_original_ids": [
+    "math_0000",
+    "math_0001",
+    "math_0002",
+    "math_0003",
+    "math_0004",
+    "math_0005",
+    "math_0006",
+    "math_0007",
+    "math_0008",
+    "math_0009"
+  ]
+}
