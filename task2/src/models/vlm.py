@@ -174,6 +174,7 @@ class VLMModel(nn.Module):
             dropout=dropout,
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         )
+        self.qwen.to(self.device)
         self.lora_enabled = True
 
     def set_stage_trainability(self, enable_lora: bool = False) -> None:
@@ -199,7 +200,7 @@ class VLMModel(nn.Module):
         with torch.no_grad():
             for name, p in self.qwen.named_parameters():
                 if name in state_dict:
-                    p.copy_(state_dict[name])
+                    p.copy_(state_dict[name].to(p.device))
 
     def get_trainable_parameters_count(self) -> Dict[str, int]:
         total = sum(p.numel() for p in self.parameters())

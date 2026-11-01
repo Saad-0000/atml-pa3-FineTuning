@@ -41,14 +41,15 @@ class LoRALinear(nn.Module):
         if self.base_layer.bias is not None:
             self.base_layer.bias.requires_grad = False
 
-        if dropout > 0.0:
-            self.dropout = nn.Dropout(p=dropout)
+        if effective_dropout > 0.0:
+            self.dropout = nn.Dropout(p=effective_dropout)
         else:
             self.dropout = nn.Identity()
 
-        # Trainable adapter weights in FP32
-        self.lora_A = nn.Parameter(torch.empty(r, self.in_features, dtype=torch.float32))
-        self.lora_B = nn.Parameter(torch.zeros(self.out_features, r, dtype=torch.float32))
+        # Initialize trainable adapter weights on the same device and in FP32
+        dev = base_layer.weight.device
+        self.lora_A = nn.Parameter(torch.empty(r, self.in_features, device=dev, dtype=torch.float32))
+        self.lora_B = nn.Parameter(torch.zeros(self.out_features, r, device=dev, dtype=torch.float32))
 
         self.merged = False
         self.reset_parameters()
@@ -64,6 +65,12 @@ class LoRALinear(nn.Module):
             return self.base_layer(x)
 
         base_out = self.base_layer(x)
+
+        # Ensure adapter parameters are on the same device as input x
+        if self.lora_A.device != x.device:
+            self.lora_A.data = self.lora_A.data.to(x.device)
+            self.lora_B.data = self.lora_B.data.to(x.device)
+
         # Compute adapter delta: (x @ A^T) @ B^T * scaling
         x_fp32 = x.to(torch.float32)
         dropped = self.dropout(x_fp32)
@@ -76,14 +83,14 @@ class LoRALinear(nn.Module):
         """Merges LoRA weight delta into base layer weight for inference."""
         if not self.merged:
             delta = (self.lora_B @ self.lora_A) * self.scaling
-            self.base_layer.weight.data += delta.to(self.base_layer.weight.dtype)
+            self.base_layer.weight.data += delta.to(self.base_layer.weight.dtype).to(self.base_layer.weight.device)
             self.merged = True
 
     def unmerge_weights(self):
         """Restores unmerged base layer weight."""
         if self.merged:
             delta = (self.lora_B @ self.lora_A) * self.scaling
-            self.base_layer.weight.data -= delta.to(self.base_layer.weight.dtype)
+            self.base_layer.weight.data -= delta.to(self.base_layer.weight.dtype).to(self.base_layer.weight.device)
             self.merged = False
 
 
@@ -107,6 +114,7 @@ def apply_lora_to_model(
                 child = getattr(module, t)
                 if isinstance(child, nn.Linear):
                     lora_mod = LoRALinear(child, r=r, alpha=alpha, dropout=dropout)
+                    lora_mod.to(child.weight.device)
                     setattr(module, t, lora_mod)
                     replaced_names.append(f"{name}.{t}")
 
