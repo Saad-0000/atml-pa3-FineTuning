@@ -16,7 +16,7 @@ if str(ROOT_DIR) not in sys.path:
 
 import pandas as pd
 from task3.src.utils.common import get_logger, get_file_sha256, atomic_save_json
-from task3.src.data.parquet_loader import load_dataset_rollouts, validate_rollout_alignment
+from task3.src.data.parquet_loader import load_dataset_rollouts, validate_rollout_alignment, resolve_dataset_dir
 from task3.src.data.synthetic_data import create_synthetic_dataset
 from task3.src.visualization.tables import build_table_t00
 
@@ -26,9 +26,9 @@ logger = get_logger("inspect_data")
 def inspect_dataset(dataset_name: str, data_dir: Path, use_synthetic_fallback: bool = True) -> Dict[str, Any]:
     """Inspects a dataset's parquet files and verifies alignment."""
     logger.info(f"Inspecting {dataset_name} in {data_dir}...")
-    ds_dir = data_dir / dataset_name
+    ds_dir = resolve_dataset_dir(data_dir, dataset_name)
     
-    if not ds_dir.exists():
+    if not (ds_dir / "generations.parquet").exists():
         if use_synthetic_fallback:
             logger.warning(f"Directory {ds_dir} not found. Creating synthetic fallback for inspection...")
             return create_synthetic_dataset(data_dir, dataset_name, num_questions=10, rollouts_per_q=32)

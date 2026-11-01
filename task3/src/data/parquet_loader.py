@@ -13,6 +13,31 @@ from task3.src.utils.common import compute_sha256, setup_logger
 logger = setup_logger("task3.data.loader")
 
 
+def resolve_dataset_dir(data_root: str | Path, dataset_name: str) -> Path:
+    """Resolves dataset directory handling aliases (e.g. qwen25-math vs MATH)."""
+    root = Path(data_root)
+    name_lower = dataset_name.lower()
+
+    if "mathvista" in name_lower:
+        candidates = ["MathVista", "qwen25vl-mathvista", "mathvista", "math_vista", "qwen25-vl-mathvista"]
+    elif "math" in name_lower:
+        candidates = ["MATH", "qwen25-math", "math", "qwen2.5-math", "qwen_math"]
+    else:
+        candidates = [dataset_name, dataset_name.lower()]
+
+    for c in candidates:
+        candidate_path = root / c
+        if candidate_path.is_dir() and (candidate_path / "generations.parquet").exists():
+            return candidate_path
+
+    for c in candidates:
+        candidate_path = root / c
+        if candidate_path.is_dir():
+            return candidate_path
+
+    return root / dataset_name
+
+
 class ParquetRolloutLoader:
     """Loads and validates supplied rollout datasets (MATH and MathVista)."""
 
@@ -22,10 +47,7 @@ class ParquetRolloutLoader:
 
     def load_dataset(self, dataset_name: str) -> pd.DataFrame:
         """Loads and joins generations, probability_metrics, and attention_metrics for a dataset."""
-        d_name = dataset_name
-        d_dir = self.data_root / d_name
-        if not d_dir.exists():
-            d_dir = self.data_root / d_name.lower()
+        d_dir = resolve_dataset_dir(self.data_root, dataset_name)
 
         gen_path = d_dir / "generations.parquet"
         prob_path = d_dir / "probability_metrics.parquet"

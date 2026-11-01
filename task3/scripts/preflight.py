@@ -67,15 +67,18 @@ def check_data_directory(data_dir: Path):
     
     file_info = {}
     for rel_path in expected_files:
-        p = data_dir / rel_path
-        if p.exists():
+        target = data_dir / rel_path
+        if not target.exists():
+            alias_path = rel_path.replace("MATH/", "qwen25-math/").replace("MathVista/", "qwen25vl-mathvista/")
+            if (data_dir / alias_path).exists():
+                target = data_dir / alias_path
+        if target.exists():
             file_info[rel_path] = {
                 "present": True,
-                "size_mb": round(p.stat().st_size / (1024 * 1024), 2),
+                "size_mb": round(target.stat().st_size / (1024 * 1024), 2),
             }
         else:
             file_info[rel_path] = {"present": False}
-            
     return {"exists": True, "path": str(data_dir), "files": file_info}
 
 

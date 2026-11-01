@@ -50,7 +50,7 @@ def main():
 
     # Load question text and gold answers from parquet or create fallbacks
     data_dir = Path(args.data_dir)
-    math_parquet = data_dir / "MATH" / "generations.parquet"
+    math_parquet = resolve_dataset_dir(data_dir, "MATH") / "generations.parquet"
     
     questions_data = {}
     if math_parquet.exists():

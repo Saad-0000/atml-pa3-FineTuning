@@ -20,7 +20,7 @@ if str(ROOT_DIR) not in sys.path:
 import numpy as np
 import pandas as pd
 from task3.src.utils.common import get_logger, atomic_save_json
-from task3.src.data.parquet_loader import load_dataset_rollouts
+from task3.src.data.parquet_loader import load_dataset_rollouts, resolve_dataset_dir
 from task3.src.data.synthetic_data import create_synthetic_dataset
 from task3.src.scoring.normalization import normalize_answer, grade_correctness, MATH_VERIFY_AVAILABLE
 from task3.src.selection.quality_scores import compute_mean_logp, compute_mean_self_certainty, compute_visual_engagement
@@ -32,9 +32,9 @@ logger = get_logger("prepare_data")
 def process_dataset_rollouts(data_dir: Path, dataset_name: str, output_dir: Path) -> Dict[str, Any]:
     """Loads, scores, and saves canonical rollouts for a dataset."""
     logger.info(f"Processing rollouts for {dataset_name}...")
-    ds_dir = data_dir / dataset_name
+    ds_dir = resolve_dataset_dir(data_dir, dataset_name)
     
-    if not ds_dir.exists():
+    if not (ds_dir / "generations.parquet").exists():
         logger.warning(f"{ds_dir} not found. Generating synthetic fallback...")
         create_synthetic_dataset(data_dir, dataset_name, num_questions=20, rollouts_per_q=32)
 

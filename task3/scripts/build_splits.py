@@ -25,7 +25,7 @@ logger = get_logger("build_splits")
 
 def get_question_ids(data_dir: Path, dataset_name: str) -> list:
     """Extract distinct question IDs from dataset rollouts or generate standard 1000 IDs."""
-    parquet_path = data_dir / dataset_name / "generations.parquet"
+    parquet_path = resolve_dataset_dir(data_dir, dataset_name) / "generations.parquet"
     if parquet_path.exists():
         df = pd.read_parquet(parquet_path, columns=["sample_id"])
         ids = df["sample_id"].astype(str).unique().tolist()
